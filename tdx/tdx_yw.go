@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strings"
 	"time"
+
+	"github.com/nie312122330/niexq-gotools/fileext"
 )
 
 //查询集合竞价
@@ -259,4 +262,20 @@ func (tc *TdxConn) QueryBarK1m(mkt int16, stCode string, start, count int16) (re
 	}
 	resultVo.Datas = datas
 	return resultVo, nil
+}
+
+//从ECB文件中读取股票代码
+func ReadStCodeFromEcbFile(ecbFilePath string) []string {
+	content, erro := fileext.ReadFileContent(ecbFilePath)
+	if nil != erro {
+		panic(erro)
+	}
+	results := strings.Split(content, "\r\n")
+	stocksList := []string{}
+	for _, v := range results {
+		if len(v) > 0 {
+			stocksList = append(stocksList, v)
+		}
+	}
+	return stocksList
 }
