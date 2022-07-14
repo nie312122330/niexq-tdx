@@ -3,7 +3,9 @@ package tdx
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math"
+	"net/http"
 	"strings"
 	"time"
 
@@ -278,4 +280,35 @@ func ReadStCodeFromEcbFile(ecbFilePath string) []string {
 		}
 	}
 	return stocksList
+}
+
+//利用QQ股票获取股票名称
+func QueryStName(mkt byte, stCode string, retryTimes int) (name string, err error) {
+	mktStr := "sz"
+	if mkt == 1 {
+		mktStr = "sh"
+	}
+	reqUrl := fmt.Sprintf("https://qt.gtimg.cn/q=s_%s%s", mktStr, stCode)
+	client := http.Client{Timeout: 2 * time.Second}
+	response, err := client.Get(reqUrl)
+	if err != nil {
+		if retryTimes > 0 {
+			retryTimes--
+			return QueryStName(mkt, stCode, retryTimes)
+		} else {
+			return "", err
+		}
+	}
+	defer response.Body.Close()
+	dataByte, err := ioutil.ReadAll(response.Body)
+	if nil != err {
+		return "", err
+	}
+	utf8Byte, err := GbkToUtf8(dataByte)
+	if nil != err {
+		return "", err
+	}
+	str := string(utf8Byte)
+	strArry := strings.Split(str, "~")
+	return strArry[1], nil
 }

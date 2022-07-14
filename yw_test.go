@@ -48,3 +48,8 @@ func TestQueryDatesMaxVolAndClosePrice(t *testing.T) {
 	closePrice, maxVol := tdxConn.QueryDatesMaxVolAndClosePrice(dates, 0, "002073")
 	log.Printf("【%s】最大量为:%d,最大金额:%d\n", "002073", maxVol, closePrice)
 }
+
+func TestQueryStName(t *testing.T) {
+	name, _ := tdx.QueryStName(0, "000630", 3)
+	log.Printf("%s\n", name)
+}
