@@ -53,3 +53,8 @@ func TestQueryStName(t *testing.T) {
 	name, _ := tdx.QueryStName(0, "000630", 3)
 	log.Printf("%s\n", name)
 }
+
+func TestReadTdxExportTxtFile(t *testing.T) {
+	result := tdx.ReadTdxExportTxtFile("C:/Users/niexq/Desktop/20220722.txt")
+	log.Printf("%v\n", result)
+}

@@ -6,9 +6,11 @@ import (
 	"io/ioutil"
 	"math"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/djimenez/iconv-go"
 	"github.com/nie312122330/niexq-gotools/fileext"
 )
 
@@ -311,4 +313,61 @@ func QueryStName(mkt byte, stCode string, retryTimes int) (name string, err erro
 	str := string(utf8Byte)
 	strArry := strings.Split(str, "~")
 	return strArry[1], nil
+}
+
+//从通达信导出的Txt文件中读取股票数据【代码	名称 涨幅	现价 涨跌】
+func ReadTdxExportTxtFile(txtFilePath string) []TdxTxtStVo {
+	contentStr, erro := ReadGbKFile(txtFilePath)
+	if nil != erro {
+		panic(erro)
+	}
+	results := []TdxTxtStVo{}
+	lines := strings.Split(contentStr, "\r\n")
+	for _, v := range lines {
+		if len(v) <= 0 {
+			continue
+		}
+		if strings.HasPrefix(v, "代码") || strings.HasPrefix(v, "数据来源") {
+			continue
+		}
+		colArray := strings.Split(v, "\t")
+		stCode := colArray[0]
+		mkt := int16(0)
+		if strings.HasPrefix(stCode, "0") {
+			mkt = int16(0)
+		} else {
+			mkt = int16(1)
+		}
+
+		stName := colArray[1]
+		zf, _ := strconv.ParseFloat(colArray[2], 64)
+		close, _ := strconv.ParseFloat(colArray[3], 64)
+		zd, _ := strconv.ParseFloat(colArray[4], 64)
+
+		results = append(results, TdxTxtStVo{
+			StCode: stCode,
+			StMkt:  mkt,
+			StName: stName,
+			StZf:   int(zf * 100),
+			StXJ:   int(close * 100),
+			StZd:   int(zd * 100),
+		})
+	}
+	return results
+}
+
+func ReadGbKFile(filePath string) (str string, err error) {
+	readDatas, erro := fileext.ReadFileByte(filePath)
+	if nil != erro {
+		return "", erro
+	}
+	if len(readDatas) <= 0 {
+		return "", nil
+	}
+	cvBytes := make([]byte, 2*len(readDatas))
+	_, bytesWritten, erro := iconv.Convert(readDatas, cvBytes, "GBK", "UTF-8")
+	if nil != erro {
+		return "", erro
+	}
+	return string(cvBytes[0:bytesWritten]), nil
 }
