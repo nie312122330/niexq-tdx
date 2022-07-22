@@ -69,3 +69,13 @@ func (t TdxJsonTime) MarshalJSON() ([]byte, error) {
 func (t TdxJsonTime) ToStr() string {
 	return time.Time(t).Format(TIME_LAYOUT)
 }
+
+//1分钟的线
+type TdxTxtStVo struct {
+	StCode string `json:"stCode"`
+	StMkt  int16  `json:"stMkt"`
+	StName string `json:"stName"`
+	StZf   int    `json:"stZf"`
+	StXJ   int    `json:"stXj"`
+	StZd   int    `json:"stZd"`
+}
