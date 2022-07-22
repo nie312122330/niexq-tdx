@@ -333,12 +333,13 @@ func ReadTdxExportTxtFile(txtFilePath string) []TdxTxtStVo {
 		colArray := strings.Split(v, "\t")
 		stCode := colArray[0]
 		mkt := int16(0)
-		if strings.HasPrefix(stCode, "0") {
+		if strings.HasPrefix(stCode, "0") || strings.HasPrefix(stCode, "3") {
 			mkt = int16(0)
-		} else {
+		} else if strings.HasPrefix(stCode, "6") {
 			mkt = int16(1)
+		} else {
+			mkt = int16(4)
 		}
-
 		stName := colArray[1]
 		zf, _ := strconv.ParseFloat(colArray[2], 64)
 		close, _ := strconv.ParseFloat(colArray[3], 64)
