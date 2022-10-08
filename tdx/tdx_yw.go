@@ -1,6 +1,7 @@
 package tdx
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -10,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/djimenez/iconv-go"
 	"github.com/nie312122330/niexq-gotools/fileext"
+	"github.com/qiniu/iconv"
 )
 
-//查询集合竞价
+// 查询集合竞价
 func (tc *TdxConn) QueryJhjj(mkt int16, stCode string) (resuls *TdxRespBaseVo[TdxJhjjVo], err error) {
 	resultVo := &TdxRespBaseVo[TdxJhjjVo]{
 		Market:  int(mkt),
@@ -64,7 +65,7 @@ func (tc *TdxConn) QueryJhjj(mkt int16, stCode string) (resuls *TdxRespBaseVo[Td
 	return resultVo, nil
 }
 
-//查询分时成交---暂不使用，业务中没有具体的参考
+// 查询分时成交---暂不使用，业务中没有具体的参考
 func (tc *TdxConn) QueryFscj(mkt int16, stCode string, startPos, endPost int16) (resuls *TdxRespBaseVo[TdxFscjVo], err error) {
 	resultVo := &TdxRespBaseVo[TdxFscjVo]{
 		Market:  int(mkt),
@@ -113,7 +114,7 @@ func (tc *TdxConn) QueryFscj(mkt int16, stCode string, startPos, endPost int16) 
 	return resultVo, nil
 }
 
-//分时行情
+// 分时行情
 func (tc *TdxConn) QueryFshq(date int32, mkt byte, stCode string) (resuls *TdxRespBaseVo[TdxFshqVo], err error) {
 	resultVo := &TdxRespBaseVo[TdxFshqVo]{
 		Market:  int(mkt),
@@ -200,7 +201,7 @@ func (tc *TdxConn) QueryFshq(date int32, mkt byte, stCode string) (resuls *TdxRe
 	return resultVo, nil
 }
 
-//查询指定日期内的收盘价及分钟最大量
+// 查询指定日期内的收盘价及分钟最大量
 func (tc *TdxConn) QueryDatesMaxVolAndClosePrice(dates []int32, mkt byte, stCode string) (closePrice, maxVol int) {
 	//排序
 	BubbleSort(&dates)
@@ -218,7 +219,7 @@ func (tc *TdxConn) QueryDatesMaxVolAndClosePrice(dates []int32, mkt byte, stCode
 	return closePrice, maxVol
 }
 
-//1分钟的K线
+// 1分钟的K线
 func (tc *TdxConn) QueryBarK1m(mkt int16, stCode string, start, count int16) (resuls *TdxRespBaseVo[TdxBarK1mVo], err error) {
 	resultVo := &TdxRespBaseVo[TdxBarK1mVo]{
 		Market:  int(mkt),
@@ -268,7 +269,7 @@ func (tc *TdxConn) QueryBarK1m(mkt int16, stCode string, start, count int16) (re
 	return resultVo, nil
 }
 
-//从ECB文件中读取股票代码
+// 从ECB文件中读取股票代码
 func ReadStCodeFromEcbFile(ecbFilePath string) []string {
 	content, erro := fileext.ReadFileContent(ecbFilePath)
 	if nil != erro {
@@ -284,7 +285,7 @@ func ReadStCodeFromEcbFile(ecbFilePath string) []string {
 	return stocksList
 }
 
-//利用QQ股票获取股票名称
+// 利用QQ股票获取股票名称
 func QueryStName(mkt byte, stCode string, retryTimes int) (name string, err error) {
 	mktStr := "sz"
 	if mkt == 1 {
@@ -315,7 +316,7 @@ func QueryStName(mkt byte, stCode string, retryTimes int) (name string, err erro
 	return strArry[1], nil
 }
 
-//从通达信导出的Txt文件中读取股票数据【代码	名称 涨幅	现价 涨跌】
+// 从通达信导出的Txt文件中读取股票数据【代码	名称 涨幅	现价 涨跌】
 func ReadTdxExportTxtFile(txtFilePath string) []TdxTxtStVo {
 	contentStr, erro := ReadGbKFile(txtFilePath)
 	if nil != erro {
@@ -365,10 +366,14 @@ func ReadGbKFile(filePath string) (str string, err error) {
 	if len(readDatas) <= 0 {
 		return "", nil
 	}
-	cvBytes := make([]byte, 2*len(readDatas))
-	_, bytesWritten, erro := iconv.Convert(readDatas, cvBytes, "GBK", "UTF-8")
-	if nil != erro {
-		return "", erro
-	}
-	return string(cvBytes[0:bytesWritten]), nil
+
+	cvt, _ := iconv.Open("utf-8", "gbk")
+	defer cvt.Close()
+
+	buf := bytes.Buffer{}
+	buf.ReadFrom(iconv.NewReader(cvt, bytes.NewReader(readDatas), 0))
+
+	cvBytes := buf.Bytes()
+
+	return string(cvBytes), nil
 }
