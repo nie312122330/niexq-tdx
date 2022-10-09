@@ -1,7 +1,6 @@
 package tdx
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -11,8 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/axgle/mahonia"
 	"github.com/nie312122330/niexq-gotools/fileext"
-	"github.com/qiniu/iconv"
 )
 
 // 查询集合竞价
@@ -366,14 +365,7 @@ func ReadGbKFile(filePath string) (str string, err error) {
 	if len(readDatas) <= 0 {
 		return "", nil
 	}
-
-	cvt, _ := iconv.Open("utf-8", "gbk")
-	defer cvt.Close()
-
-	buf := bytes.Buffer{}
-	buf.ReadFrom(iconv.NewReader(cvt, bytes.NewReader(readDatas), 0))
-
-	cvBytes := buf.Bytes()
-
-	return string(cvBytes), nil
+	enc := mahonia.NewDecoder("GBK")
+	result := enc.ConvertString(string(readDatas))
+	return result, nil
 }
