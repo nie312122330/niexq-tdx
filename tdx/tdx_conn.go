@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-//响应头的长度 16位0x10=16
+// 响应头的长度 16位0x10=16
 var H_LEN int = 0x10
 
 func NewTdxConn(connName, addr string) (tdx *TdxConn, err error) {
@@ -37,7 +37,13 @@ func NewTdxConn(connName, addr string) (tdx *TdxConn, err error) {
 	return newTdx, nil
 }
 
-//登录
+// 连接关闭
+func (newTdx *TdxConn) TdxConnClose() {
+	newTdx.Connected = false
+	newTdx.NetConn.Close()
+}
+
+// 登录
 func (newTdx *TdxConn) tdxConnLogin() error {
 	lgVo1, errorLogin1 := newTdx.SendData(CmdBytesLogin1())
 	if nil != errorLogin1 {
@@ -63,7 +69,7 @@ func (newTdx *TdxConn) tdxConnLogin() error {
 	return nil
 }
 
-//心跳维持
+// 心跳维持
 func (newTdx *TdxConn) heartBeat() {
 	for {
 		//每15秒发送一次心跳检查
@@ -75,10 +81,13 @@ func (newTdx *TdxConn) heartBeat() {
 		} else {
 			log.Printf("【%s】心跳检查成功\n", newTdx.ConnName)
 		}
+		if !newTdx.Connected {
+			break
+		}
 	}
 }
 
-//请求数据
+// 请求数据
 func (tc *TdxConn) SendData(data []byte) (vo TdxTcpPackVo, err error) {
 	if !tc.Connected {
 		return TdxTcpPackVo{}, errors.New("未建立连接")
@@ -90,7 +99,7 @@ func (tc *TdxConn) SendData(data []byte) (vo TdxTcpPackVo, err error) {
 	return tc.reciveTcpPackVo()
 }
 
-//发送报文后，接收数据
+// 发送报文后，接收数据
 func (tc *TdxConn) reciveTcpPackVo() (vo TdxTcpPackVo, err error) {
 	cacheBytes := []byte{}
 	var resultVo TdxTcpPackVo
@@ -129,7 +138,7 @@ func (tc *TdxConn) reciveTcpPackVo() (vo TdxTcpPackVo, err error) {
 	return resultVo, resultErr
 }
 
-//将读取到的数据和HeadVo打包成TcpPackVo
+// 将读取到的数据和HeadVo打包成TcpPackVo
 func (tc *TdxConn) bodyBytesPkgVo(headerVo *TdxHeaderVo, headerBytes, bodyData []byte) (vo TdxTcpPackVo, err error) {
 	pakageData := TdxTcpPackVo{Hedvo: *headerVo, HedData: headerBytes, BodyData: bodyData}
 	//开始解包
