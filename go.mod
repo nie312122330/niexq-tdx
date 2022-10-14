@@ -7,3 +7,5 @@ require (
 	github.com/nie312122330/niexq-gotools v0.6.6
 	golang.org/x/text v0.3.7
 )
+
+require github.com/gofrs/uuid v3.3.0+incompatible // indirect
