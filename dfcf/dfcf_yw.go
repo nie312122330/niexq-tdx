@@ -98,7 +98,7 @@ func DcQueryDay5Fshq(retryTimes int, stcode string) (results []DcFshqVo, resultE
 
 // 东方财富，分时图实时监控
 func DcK1mMonitor(idx int, stCode string, dataCh chan DcK1mNotifyVo) {
-	k1mDataRegExp := regexp.MustCompile(`data: (\{\".*\})`)
+	k1mDataRegExp := regexp.MustCompile(`data: (\{\"rc.*\]\}\})`)
 
 	baseUrl := "http://%d.push2.eastmoney.com/api/qt/stock/trends2/sse"
 	baseUrl += "?fields1=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f17&fields2=f51,f52,f53,f54,f55,f56,f57,f58"
