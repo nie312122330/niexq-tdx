@@ -112,7 +112,7 @@ func DcK1mMonitor(idx int, stCode string, dataCh chan DcK1mNotifyVo) {
 	}
 	resultStr := ""
 	for {
-		data := make([]byte, 100*1024)
+		data := make([]byte, 5*1024*1024)
 		n, err := response.Body.Read(data)
 		if nil != err {
 			log.Printf("读取数据异常，关闭【%s】的数据获取\n", stCode)
