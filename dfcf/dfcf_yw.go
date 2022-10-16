@@ -25,15 +25,16 @@ func DcGetDateRangeMaxVolClosePrice(stcode string, start, end time.Time) (maxVol
 	if len(resultVos) <= 0 {
 		return -1, -1
 	}
-	closeMoney = resultVos[len(resultVos)-1].Price
+	cp := 0
 	for _, v := range resultVos {
 		if time.Time(v.DateTime).After(start) && time.Time(v.DateTime).Before(end) {
 			if v.Vol > maxVol {
 				maxVol = v.Vol
 			}
+			cp = v.Price
 		}
 	}
-	return maxVol, closeMoney
+	return maxVol, cp
 }
 
 // 查询最近5天的分时行情
