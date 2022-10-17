@@ -97,7 +97,7 @@ func DcQueryDay5Fshq(retryTimes int, stcode string) (results []DcFshqVo, resultE
 }
 
 // 东方财富，分时图实时监控
-func DcK1mMonitor(idx int, stCode string, dataCh chan DcK1mNotifyVo) {
+func DcK1mMonitor(idx int, stCode, stName string, dataCh chan DcK1mNotifyVo) {
 	k1mDataRegExp := regexp.MustCompile(`data: (\{\"rc.*\]\}\})`)
 
 	baseUrl := "http://%d.push2.eastmoney.com/api/qt/stock/trends2/sse"
@@ -115,7 +115,7 @@ func DcK1mMonitor(idx int, stCode string, dataCh chan DcK1mNotifyVo) {
 		data := make([]byte, 5*1024*1024)
 		n, err := response.Body.Read(data)
 		if nil != err {
-			log.Printf("读取数据异常，关闭【%s】的数据获取\n", stCode)
+			log.Printf("【%s】读取数据异常，关闭【%s】的数据获取\n", stName, stCode)
 			dataCh <- DcK1mNotifyVo{
 				StockCode: stCode,
 				Datas:     nil,
@@ -125,6 +125,7 @@ func DcK1mMonitor(idx int, stCode string, dataCh chan DcK1mNotifyVo) {
 		str := string(data[:n])
 		resultStr += str
 		resultArray := k1mDataRegExp.FindStringSubmatch(resultStr)
+		log.Printf("【%s-%s】接收到【%d】字符,解析结果【%d】\n", stName, stCode, len(resultStr), len(resultArray))
 		if len(resultArray) > 1 {
 			for i := 1; i < len(resultArray); i++ {
 				m := DcK1mRespVo{}
@@ -138,4 +139,5 @@ func DcK1mMonitor(idx int, stCode string, dataCh chan DcK1mNotifyVo) {
 			resultStr = ""
 		}
 	}
+	log.Printf("【%s】断开连接，关闭【%s】的数据获取\n", stName, stCode)
 }
