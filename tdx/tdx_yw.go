@@ -114,7 +114,7 @@ func (tc *TdxConn) QueryFscj(mkt int16, stCode string, startPos, endPost int16) 
 }
 
 // 分时行情
-func (tc *TdxConn) QueryFshq(date int32, mkt byte, stCode string) (resuls *TdxRespBaseVo[TdxFshqVo], err error) {
+func (tc *TdxConn) QueryFshq(date int32, mkt byte, stCode string) (resuls *TdxRespBaseVo[TdxFshqVo], preClosePrice int, err error) {
 	resultVo := &TdxRespBaseVo[TdxFshqVo]{
 		Market:  int(mkt),
 		StCode:  stCode,
@@ -122,16 +122,16 @@ func (tc *TdxConn) QueryFshq(date int32, mkt byte, stCode string) (resuls *TdxRe
 	}
 	vo, err := tc.SendData(CmdFshq(date, mkt, stCode))
 	if nil != err {
-		return resultVo, err
+		return resultVo, 0, err
 	}
 	if len(vo.BodyData) < 2 {
-		return resultVo, nil
+		return resultVo, 0, nil
 	}
 	dataCount := int16(0)
 	BytesToVo(vo.BodyData[0:2], &dataCount, true)
 	pos := 2
 	if dataCount <= 0 {
-		return resultVo, errors.New("没有返回数据")
+		return resultVo, 0, errors.New("没有返回数据")
 	}
 	dateStr := fmt.Sprintf("%d", date)
 	dateStr = dateStr[0:4] + "-" + dateStr[4:6] + "-" + dateStr[6:8]
@@ -197,7 +197,7 @@ func (tc *TdxConn) QueryFshq(date int32, mkt byte, stCode string) (resuls *TdxRe
 	}
 	//赋值
 	resultVo.Datas = datas
-	return resultVo, nil
+	return resultVo, closePrice, nil
 }
 
 // 查询指定日期内的收盘价及分钟最大量
@@ -206,7 +206,7 @@ func (tc *TdxConn) QueryDatesMaxVolAndClosePrice(dates []int32, mkt byte, stCode
 	BubbleSort(&dates)
 	datas := []TdxFshqVo{}
 	for _, v := range dates {
-		res, _ := tc.QueryFshq(v, mkt, stCode)
+		res, _, _ := tc.QueryFshq(v, mkt, stCode)
 		datas = append(datas, res.Datas...)
 	}
 	closePrice = datas[len(datas)-1].Price

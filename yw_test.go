@@ -37,8 +37,9 @@ func TestQueryFscj(t *testing.T) {
 
 // 测试  分时行情
 func TestQueryFshq(t *testing.T) {
-	res2, _ := tdxConn.QueryFshq(20210106, 1, "600322")
-	log.Printf("分时行情返回数据【%v】\n", res2.Datas)
+	res2, pc, _ := tdxConn.QueryFshq(20221019, 1, "600322")
+
+	log.Printf("分时行情昨日收盘[%d],长度[%d],第1条为[%v]\n", pc, len(res2.Datas), res2.Datas[0])
 }
 
 // 测试 集合竞价
