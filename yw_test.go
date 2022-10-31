@@ -8,6 +8,7 @@ import (
 	"github.com/axgle/mahonia"
 	"github.com/nie312122330/niexq-gotools/fileext"
 	"github.com/nie312122330/niexq-tdx/tdx"
+	tdxlocal "github.com/nie312122330/niexq-tdx/tdx-local"
 )
 
 var tdxConn *tdx.TdxConn
@@ -19,6 +20,16 @@ func init() {
 		panic(err)
 	}
 	tdxConn = tdxConn1
+}
+
+func TestLocalFile(t *testing.T) {
+	//K线数据测试,计算量与价的关系
+	filePath := tdxlocal.Code2FilePath(`C:\zd_zsone\vipdoc`, "600456")
+	datas := tdxlocal.ParseStockLc1mFile(filePath)
+	for _, v := range datas {
+		fmt.Printf("%s:%v,%v\n", v.DateTime.String(), v.Amount, v.Blzd)
+	}
+
 }
 
 // 测试  字符集合转换
