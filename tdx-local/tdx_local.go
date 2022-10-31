@@ -13,6 +13,20 @@ import (
 	"github.com/nie312122330/niexq-gotools/dateext"
 )
 
+// 时间区间内的数据
+func Lc1mBarVoByTime(start, end time.Time, vipdocDir, stCode string) []Lc1mBarVo {
+	filePath := Code2FilePath(vipdocDir, stCode)
+	srcDatas := ParseStockLc1mFile(filePath)
+	vos := []Lc1mBarVo{}
+	for _, v := range srcDatas {
+		if v.DateTime.After(start) && v.DateTime.Before(end) {
+			vos = append(vos, v)
+		}
+	}
+	return vos
+}
+
+// 解析文件
 func ParseStockLc1mFile(filePath string) []Lc1mBarVo {
 	//确定文件名称
 	data, err := os.ReadFile(filePath)

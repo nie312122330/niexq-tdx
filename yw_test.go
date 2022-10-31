@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/axgle/mahonia"
+	"github.com/nie312122330/niexq-gotools/dateext"
 	"github.com/nie312122330/niexq-gotools/fileext"
 	"github.com/nie312122330/niexq-tdx/tdx"
 	tdxlocal "github.com/nie312122330/niexq-tdx/tdx-local"
@@ -24,12 +25,14 @@ func init() {
 
 func TestLocalFile(t *testing.T) {
 	//K线数据测试,计算量与价的关系
-	filePath := tdxlocal.Code2FilePath(`C:\zd_zsone\vipdoc`, "600456")
-	datas := tdxlocal.ParseStockLc1mFile(filePath)
+	start := dateext.WithDate(2022, 9, 21, 9, 0, 0).Time
+	end := dateext.WithDate(2022, 9, 21, 18, 0, 0).Time
+	datas := tdxlocal.Lc1mBarVoByTime(start, end, `C:\zd_zsone\vipdoc`, "600456")
+	//filePath := tdxlocal.Code2FilePath(`C:\zd_zsone\vipdoc`, "600456")
+	// datas := tdxlocal.ParseStockLc1mFile(filePath)
 	for _, v := range datas {
 		fmt.Printf("%s:%v,%v\n", v.DateTime.String(), v.Amount, v.Blzd)
 	}
-
 }
 
 // 测试  字符集合转换
