@@ -25,14 +25,12 @@ func init() {
 
 func TestLocalFile(t *testing.T) {
 	//K线数据测试,计算量与价的关系
-	start := dateext.WithDate(2022, 9, 21, 9, 0, 0).Time
-	end := dateext.WithDate(2022, 9, 21, 18, 0, 0).Time
-	datas := tdxlocal.Lc1mBarVoByTime(start, end, `C:\zd_zsone\vipdoc`, "600456")
+	start := dateext.WithDate(2022, 9, 15, 9, 0, 0).Time
+	end := dateext.WithDate(2022, 10, 10, 18, 0, 0).Time
+	buy, sall, min := tdxlocal.Lc1mBarVoByTimeBuyMoney(start, end, `C:\zd_zsone\vipdoc`, "600171")
 	//filePath := tdxlocal.Code2FilePath(`C:\zd_zsone\vipdoc`, "600456")
 	// datas := tdxlocal.ParseStockLc1mFile(filePath)
-	for _, v := range datas {
-		fmt.Printf("%s:%v,%v\n", v.DateTime.String(), v.Amount, v.Blzd)
-	}
+	fmt.Printf("买:%0.2f,卖:%0.2f,平:%0.2f\n", buy, sall, min)
 }
 
 // 测试  字符集合转换

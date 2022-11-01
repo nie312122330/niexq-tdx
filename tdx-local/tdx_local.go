@@ -13,6 +13,21 @@ import (
 	"github.com/nie312122330/niexq-gotools/dateext"
 )
 
+// 时间区间内的净买
+func Lc1mBarVoByTimeBuyMoney(start, end time.Time, vipdocDir, stCode string) (buy, sall, min float32) {
+	datas := Lc1mBarVoByTime(start, end, vipdocDir, stCode)
+	for _, v := range datas {
+		if v.Open < v.Close {
+			buy += v.Amount
+		} else if v.Open > v.Close {
+			sall += v.Amount
+		} else {
+			min += v.Amount
+		}
+	}
+	return buy, sall, min
+}
+
 // 时间区间内的数据
 func Lc1mBarVoByTime(start, end time.Time, vipdocDir, stCode string) []Lc1mBarVo {
 	filePath := Code2FilePath(vipdocDir, stCode)
