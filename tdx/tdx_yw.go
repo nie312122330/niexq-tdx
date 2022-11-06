@@ -3,7 +3,8 @@ package tdx
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
+
 	"math"
 	"net/http"
 	"strconv"
@@ -303,7 +304,7 @@ func QueryStName(mkt byte, stCode string, retryTimes int) (name string, err erro
 		}
 	}
 	defer response.Body.Close()
-	dataByte, err := ioutil.ReadAll(response.Body)
+	dataByte, err := io.ReadAll(response.Body)
 	if nil != err {
 		return "", err
 	}
