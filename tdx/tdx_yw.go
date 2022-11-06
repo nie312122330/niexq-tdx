@@ -39,7 +39,7 @@ func (tc *TdxConn) QueryJhjj(mkt int16, stCode string) (resuls *TdxRespBaseVo[Td
 		money := int(DataReadFloat(vo.BodyData, &pos, 4) * 100) //14-4  价格：分
 		vol := DataReadint32(vo.BodyData, &pos)                 //10-4  匹配量
 		unvol := DataReadint32(vo.BodyData, &pos)               //6-4   未匹配量(有+-)
-		pos = pos + 1                                           //跳过1位,不晓得有什么用 2-1
+		unData := DataReadint8(vo.BodyData, &pos)               //跳过1位,不晓得有什么用 2-1
 		sec := DataReadint8(vo.BodyData, &pos)                  //这一位是时间的秒 1-1  时间：秒
 
 		unFlag := 0
@@ -57,6 +57,7 @@ func (tc *TdxConn) QueryJhjj(mkt int16, stCode string) (resuls *TdxRespBaseVo[Td
 			Vol:    int(vol),
 			UnVol:  int(math.Abs(float64(unvol))),
 			UnFlag: unFlag,
+			UnData: int(unData),
 		})
 	}
 	//赋值
