@@ -15,6 +15,7 @@ import (
 	"github.com/nie312122330/niexq-gotools/fileext"
 )
 
+// 获取所有股票的上一个交易日的收盘价
 func (tc *TdxConn) QueryAllSt() []StListItemVo {
 	allVos := []StListItemVo{}
 	//深证
