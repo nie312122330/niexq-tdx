@@ -66,7 +66,7 @@ func CmdHeartbeat() []byte {
 	return outData
 }
 
-//当天的集合竞价
+// 当天的集合竞价
 func CmdJhjj(mkt int16, stCode string) []byte {
 	outData := HexStrToBytes("0c02080301011e001e00") //c50f
 	outData = append(outData, NumToBytes(TDX_FUNC_JHJY, true)...)
@@ -77,7 +77,7 @@ func CmdJhjj(mkt int16, stCode string) []byte {
 	return outData
 }
 
-//当天的分时成交
+// 当天的分时成交
 func CmdFscj(mkt int16, stCode string, startPos, endPos int16) []byte {
 	outData := HexStrToBytes("0c17080101010e000e00") //c50f
 	outData = append(outData, NumToBytes(TDX_FUNC_FSCJ, true)...)
@@ -115,5 +115,14 @@ func CmdBarK1m(mkt int16, stCode string, start, count int16) []byte {
 	outData = append(outData, NumToBytes(int32(0), true)...)
 	outData = append(outData, NumToBytes(int32(0), true)...)
 	outData = append(outData, NumToBytes(int16(0), true)...)
+	return outData
+}
+
+// 获取股票列表
+// CmdStList( 0, 0)
+func CmdStList(mkt uint16, start uint16) []byte {
+	outData := HexStrToBytes("0c0118640101060006005004") //c50f
+	outData = append(outData, NumToBytes(mkt, true)...)
+	outData = append(outData, NumToBytes(start, true)...)
 	return outData
 }

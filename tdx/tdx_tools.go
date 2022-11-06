@@ -57,6 +57,13 @@ func DataReadint8(data []byte, inPos *int) (rst int8) {
 	return num
 }
 
+func DataReaduint8(data []byte, inPos *int) (rst uint8) {
+	num := uint8(0)
+	BytesToVo(data[*inPos:*inPos+1], &num, true)
+	*inPos = *inPos + 1
+	return num
+}
+
 // 这个很特殊-读取有符号和无符号数据（+-）
 func DataReadSignNum(data []byte, pos *int) int {
 	pos_byte := 6

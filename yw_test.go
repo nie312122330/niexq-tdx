@@ -23,6 +23,15 @@ func init() {
 	tdxConn = tdxConn1
 }
 
+// 测试  读取股票列表
+func TestQueryStList(t *testing.T) {
+	datas := tdxConn.QueryAllSt()
+	fmt.Println(len(datas))
+	for _, v := range datas {
+		fmt.Printf("%v\n", v)
+	}
+}
+
 func TestLocalFile(t *testing.T) {
 	//K线数据测试,计算量与价的关系
 	start := dateext.WithDate(2022, 9, 15, 9, 0, 0).Time

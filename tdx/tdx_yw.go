@@ -15,6 +15,80 @@ import (
 	"github.com/nie312122330/niexq-gotools/fileext"
 )
 
+func (tc *TdxConn) QueryAllSt() []StListItemVo {
+	allVos := []StListItemVo{}
+	//深证
+	mkt := uint16(0)
+	start := uint16(0)
+	for {
+		vos := tc.QueryStList(mkt, start)
+		for _, v := range vos {
+			if strings.HasPrefix(v.StCode, "00") || strings.HasPrefix(v.StCode, "30") {
+				allVos = append(allVos, v)
+			}
+		}
+		start += uint16(len(vos))
+		if len(vos) <= 0 {
+			break
+		}
+	}
+
+	//上证
+	mkt = 1
+	start = 0
+	for {
+		vos := tc.QueryStList(mkt, start)
+		for _, v := range vos {
+			if strings.HasPrefix(v.StCode, "60") || strings.HasPrefix(v.StCode, "68") {
+				allVos = append(allVos, v)
+			}
+		}
+		start += uint16(len(vos))
+		if len(vos) <= 0 {
+			break
+		}
+	}
+	return allVos
+}
+
+// 股票列表，主要查询上一个交易日的收盘价以及股票代码
+func (tc *TdxConn) QueryStList(mkt, start uint16) []StListItemVo {
+	enc := mahonia.NewDecoder("GBK")
+	vo, _ := tc.SendData(CmdStList(mkt, start))
+	dataCount := int16(0)
+	BytesToVo(vo.BodyData[0:2], &dataCount, true)
+	//每一个股票29个字节
+	vos := []StListItemVo{}
+	pos := 2
+	for i := int16(0); i < dataCount; i++ {
+		// fmt.Printf("%v\n", vo.BodyData[pos:pos+29])
+		//<6sH8s4sBI4s
+		stCode := enc.ConvertString(string(vo.BodyData[pos : pos+6]))
+		pos += 6
+		//单位[长度2]
+		pos += 2
+		// _ := DataReadint16(vo.BodyData, &pos)
+		stName := enc.ConvertString(string(vo.BodyData[pos : pos+8]))
+		pos += 8
+		//未知字符[长度4]
+		pos += 4
+		// _42 := DataReadint8(vo.BodyData, &pos)
+		//单位[长度1]
+		pos += 1
+		// dcimalPoint := DataReadint8(vo.BodyData, &pos)
+		pre_price := DataReadFloat(vo.BodyData, &pos, 4)
+		//最后4位，不知道是什么，+4过滤
+		pos += 4
+		// fmt.Printf("%v,%v,%0.2f\n", stCode, stName, pre_price)
+		vos = append(vos, StListItemVo{
+			StCode:   stCode,
+			StName:   stName,
+			PreClose: FloatXNumToInt(float64(pre_price), 100),
+		})
+	}
+	return vos
+}
+
 // 查询集合竞价
 func (tc *TdxConn) QueryJhjj(mkt int16, stCode string) (resuls *TdxRespBaseVo[TdxJhjjVo], err error) {
 	resultVo := &TdxRespBaseVo[TdxJhjjVo]{

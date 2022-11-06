@@ -58,6 +58,13 @@ type TdxBarK1mVo struct {
 	Money    int64       `json:"money"`
 }
 
+// 股票列表
+type StListItemVo struct {
+	StCode   string `json:"stCode"`
+	StName   string `json:"stName"`
+	PreClose int    `json:"preClose"`
+}
+
 type TdxJsonTime time.Time
 
 // 实现它的json序列化方法
