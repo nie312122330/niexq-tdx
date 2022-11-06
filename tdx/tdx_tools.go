@@ -57,7 +57,7 @@ func DataReadint8(data []byte, inPos *int) (rst int8) {
 	return num
 }
 
-//这个很特殊-读取有符号和无符号数据（+-）
+// 这个很特殊-读取有符号和无符号数据（+-）
 func DataReadSignNum(data []byte, pos *int) int {
 	pos_byte := 6
 	bdata := int(data[*pos])

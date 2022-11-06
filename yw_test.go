@@ -49,8 +49,7 @@ func TestQueryFscj(t *testing.T) {
 
 // 测试  分时行情
 func TestQueryFshq(t *testing.T) {
-	res2, pc, _ := tdxConn.QueryFshq(20221019, 1, "600322")
-
+	res2, pc, _ := tdxConn.QueryFshq(20221104, 1, "600322")
 	log.Printf("分时行情昨日收盘[%d],长度[%d],第1条为[%v]\n", pc, len(res2.Datas), res2.Datas[0])
 }
 
@@ -58,6 +57,9 @@ func TestQueryFshq(t *testing.T) {
 func TestQueryJhjj(t *testing.T) {
 	res3, _ := tdxConn.QueryJhjj(1, "600322")
 	log.Printf("集合竞价返回数据【%d】条\n", len(res3.Datas))
+	for _, v := range res3.Datas {
+		log.Printf("%v\n", v)
+	}
 }
 
 // 测试 查询1分钟的K线图

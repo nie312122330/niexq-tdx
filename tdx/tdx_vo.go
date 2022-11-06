@@ -7,7 +7,7 @@ import (
 
 var TIME_LAYOUT string = "2006-01-02 15:04:05"
 
-//响应
+// 响应
 type TdxRespBaseVo[T any] struct {
 	Market  int    `json:"market"`
 	StCode  string `json:"stCode"`
@@ -15,7 +15,7 @@ type TdxRespBaseVo[T any] struct {
 	Datas   []T    `json:"datas"`
 }
 
-//集合竞价视图对象
+// 集合竞价视图对象
 type TdxJhjjVo struct {
 	Hour   int `json:"Hour"`
 	Minus  int `json:"minus"`
@@ -24,9 +24,10 @@ type TdxJhjjVo struct {
 	Vol    int `json:"vol"`
 	UnVol  int `json:"unVol"`
 	UnFlag int `json:"unFlag"`
+	UnData int `json:"unData"`
 }
 
-//分时成交视图对象
+// 分时成交视图对象
 type TdxFscjVo struct {
 	Hour      int `json:"Hour"`
 	Minus     int `json:"minus"`
@@ -37,7 +38,7 @@ type TdxFscjVo struct {
 	Buyorsell int `json:"buyorsell"`
 }
 
-//分时行情
+// 分时行情
 type TdxFshqVo struct {
 	DateTime   TdxJsonTime `json:"dateTime"`
 	Price      int         `json:"price"`
@@ -46,7 +47,7 @@ type TdxFshqVo struct {
 	UnKonwData int         `json:"unKonwData"` //不晓得这个是什么，也不知道解析对没
 }
 
-//1分钟的线
+// 1分钟的线
 type TdxBarK1mVo struct {
 	DateTime TdxJsonTime `json:"dateTime"`
 	Open     int         `json:"open"`
@@ -59,18 +60,18 @@ type TdxBarK1mVo struct {
 
 type TdxJsonTime time.Time
 
-//实现它的json序列化方法
+// 实现它的json序列化方法
 func (t TdxJsonTime) MarshalJSON() ([]byte, error) {
 	var stamp = fmt.Sprintf("\"%s\"", time.Time(t).Format(TIME_LAYOUT))
 	return []byte(stamp), nil
 }
 
-//扩展ToStr方法
+// 扩展ToStr方法
 func (t TdxJsonTime) ToStr() string {
 	return time.Time(t).Format(TIME_LAYOUT)
 }
 
-//1分钟的线
+// 1分钟的线
 type TdxTxtStVo struct {
 	StCode string `json:"stCode"`
 	StMkt  int16  `json:"stMkt"`
