@@ -52,14 +52,19 @@ func TestGBK2UTF8(t *testing.T) {
 
 // 测试  分时成交
 func TestQueryFscj(t *testing.T) {
-	res, _ := tdxConn.QueryFscj(1, "600322", 3200, 10000)
+	res, _ := tdxConn.QueryFscj(1, "000025", 3200, 10000)
 	log.Printf("分时成交返回数据【%d】条\r\n", len(res.Datas))
 }
 
 // 测试  分时行情
 func TestQueryFshq(t *testing.T) {
-	res2, pc, _ := tdxConn.QueryFshq(20221104, 1, "600322")
-	log.Printf("分时行情昨日收盘[%d],长度[%d],第1条为[%v]\n", pc, len(res2.Datas), res2.Datas[0])
+	res2, pc, _ := tdxConn.QueryFshq(20221104, 1, "600519")
+	sum := 0
+	for _, v := range res2.Datas {
+		sum += v.Price
+		log.Printf("%v,%v,%v,%v,%v,%v,%v\n", v.DateTime.ToStr(), v.Price, v.PriceRaw, v.UnKonwData, v.Vol, v.VolFlag, v.UnKonwDataByte)
+	}
+	log.Printf("分时行情昨日收盘[%d],长度[%d],第1条为[%v]---%v\n", pc, len(res2.Datas), res2.Datas[0], sum)
 }
 
 // 测试 集合竞价
@@ -109,6 +114,14 @@ func TestA(t *testing.T) {
 
 func TestA1(t *testing.T) {
 	jhjjvol(1, "601965", 20220929)
+}
+
+func TestQueryAllFscj(t *testing.T) {
+	datas := tdxConn.QueryTodayFscj(0, "002197")
+	fmt.Println(len(datas))
+	for _, v := range datas {
+		fmt.Printf("%v\n", v)
+	}
 }
 
 func jhjjvol(mkt byte, stCode string, preDay int32) {

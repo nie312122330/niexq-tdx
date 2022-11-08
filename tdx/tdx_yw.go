@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
+	"sort"
 
 	"math"
 	"net/http"
@@ -141,6 +143,36 @@ func (tc *TdxConn) QueryJhjj(mkt int16, stCode string) (resuls *TdxRespBaseVo[Td
 	return resultVo, nil
 }
 
+func (tc *TdxConn) QueryTodayFscj(mkt int16, stCode string) []TdxFscjVo {
+	vos := []TdxFscjVo{}
+	tc.queryAllFscj(&vos, mkt, stCode, 0)
+
+	sort.SliceStable(vos, func(i int, j int) bool {
+		vo0 := vos[i]
+		vo1 := vos[j]
+		return vo0.Hour*3600+vo0.Minus*60+vo0.Second < vo1.Hour*3600+vo1.Minus*60+vo1.Second
+	})
+	return vos
+}
+
+// 内部方法，查询今日的分时成交
+func (tc *TdxConn) queryAllFscj(vos *[]TdxFscjVo, mkt int16, stCode string, start int16) {
+	resp, err := tc.QueryFscj(mkt, stCode, start, 1000)
+	if nil != err {
+		log.Printf("【%s】查询分时成交报错,%v", stCode, err)
+		return
+	}
+	if len(resp.Datas) <= 0 {
+		return
+	}
+	if len(resp.Datas) < 1000 {
+		*vos = append(*vos, resp.Datas...)
+		return
+	}
+	*vos = append(*vos, resp.Datas...)
+	tc.queryAllFscj(vos, mkt, stCode, start+1000)
+}
+
 // 查询分时成交---暂不使用，业务中没有具体的参考
 func (tc *TdxConn) QueryFscj(mkt int16, stCode string, startPos, endPost int16) (resuls *TdxRespBaseVo[TdxFscjVo], err error) {
 	resultVo := &TdxRespBaseVo[TdxFscjVo]{
@@ -218,10 +250,13 @@ func (tc *TdxConn) QueryFshq(date int32, mkt byte, stCode string) (resuls *TdxRe
 	closePrice := FloatXNumToInt(float64(DataReadFloat(vo.BodyData, &pos, 4)), 100)
 	//读取分时行情的方法
 
-	readFshqFunc := func(pData []byte, pPos *int, curPrice int, first bool) (pirce, volFlag, vol, unKonwData int) {
+	readFshqFunc := func(pData []byte, pPos *int, curPrice int, first bool) (pirce, volFlag, vol, priceRaw, unKonwData int, unKonwDataByte []byte) {
 		volFlag = 0
 		price_raw := DataReadSignNum(pData, &pos)
+		startPos := pos
 		unKonwData = DataReadSignNum(pData, &pos)
+		unkd := pData[startPos:pos]
+
 		vol = DataReadSignNum(vo.BodyData, &pos)
 		last_price := 0
 		if first {
@@ -240,16 +275,24 @@ func (tc *TdxConn) QueryFshq(date int32, mkt byte, stCode string) (resuls *TdxRe
 			}
 			last_price = curPrice + price_raw
 		}
-		return last_price, volFlag, vol, unKonwData
+		return last_price, volFlag, vol, price_raw, unKonwData, unkd
 	}
 	//第一次读取
-	curPrice, volFlag, vol, unKonwData := readFshqFunc(vo.BodyData, &pos, closePrice, true)
+	curPrice, volFlag, vol, priceRaw, unKonwData, unKonwDataByte := readFshqFunc(vo.BodyData, &pos, closePrice, true)
 	curTime, _ := time.Parse(TIME_LAYOUT, fmt.Sprintf("%s 09:30:00", dateStr))
-	datas = append(datas, TdxFshqVo{DateTime: TdxJsonTime(curTime), Price: curPrice, UnKonwData: unKonwData, Vol: vol, VolFlag: volFlag})
+	datas = append(datas, TdxFshqVo{
+		DateTime:       TdxJsonTime(curTime),
+		Price:          curPrice,
+		UnKonwData:     unKonwData,
+		Vol:            vol,
+		VolFlag:        volFlag,
+		PriceRaw:       priceRaw,
+		UnKonwDataByte: unKonwDataByte,
+	})
 	//读取剩余的数据,因为第一条已经读取了，所以i=1
 
 	for i := int16(1); i < dataCount; i++ {
-		curPrice, volFlag, vol, unKonwData = readFshqFunc(vo.BodyData, &pos, curPrice, false)
+		curPrice, volFlag, vol, priceRaw, unKonwData, unKonwDataByte = readFshqFunc(vo.BodyData, &pos, curPrice, false)
 		h := 0
 		m := 0
 		if i < 30 {
@@ -270,7 +313,15 @@ func (tc *TdxConn) QueryFshq(date int32, mkt byte, stCode string) (resuls *TdxRe
 		}
 		curTimestr := fmt.Sprintf("%s %02d:%02d:00", dateStr, h, m)
 		curTime, _ := time.Parse(TIME_LAYOUT, curTimestr)
-		datas = append(datas, TdxFshqVo{DateTime: TdxJsonTime(curTime), Price: curPrice, UnKonwData: unKonwData, Vol: vol, VolFlag: volFlag})
+		datas = append(datas, TdxFshqVo{
+			DateTime:       TdxJsonTime(curTime),
+			Price:          curPrice,
+			UnKonwData:     unKonwData,
+			Vol:            vol,
+			VolFlag:        volFlag,
+			PriceRaw:       priceRaw,
+			UnKonwDataByte: unKonwDataByte,
+		})
 	}
 	//赋值
 	resultVo.Datas = datas
