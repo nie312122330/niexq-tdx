@@ -126,7 +126,7 @@ func TestA1(t *testing.T) {
 }
 
 func TestQueryAllFscj(t *testing.T) {
-	datas := tdxConn.QueryTodayFscj(0, "002197")
+	datas := tdxConn.QueryTodayFscj(0, "002651")
 	fmt.Println(len(datas))
 	for _, v := range datas {
 		fmt.Printf("%v\n", v)

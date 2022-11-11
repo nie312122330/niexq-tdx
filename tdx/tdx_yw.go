@@ -268,8 +268,6 @@ func (tc *TdxConn) QueryLsFscj(date int32, mkt int16, stCode string, startPos, e
 	BytesToVo(vo.BodyData[0:2], &dataCount, true)
 	pos := 2
 	//上一日的收盘价
-	closePrice := FloatXNumToInt(float64(DataReadFloat(vo.BodyData, &pos, 4)), 100)
-	fmt.Println(closePrice)
 	last_price := 0
 
 	datas := []TdxFscjVo{}
