@@ -267,6 +267,9 @@ func (tc *TdxConn) QueryLsFscj(date int32, mkt int16, stCode string, startPos, e
 	dataCount := int16(0)
 	BytesToVo(vo.BodyData[0:2], &dataCount, true)
 	pos := 2
+	//跳过上一日收盘价，4位
+	FloatXNumToInt(float64(DataReadFloat(vo.BodyData, &pos, 4)), 100)
+
 	//上一日的收盘价
 	last_price := 0
 
