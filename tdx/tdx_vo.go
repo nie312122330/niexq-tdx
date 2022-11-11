@@ -40,13 +40,10 @@ type TdxFscjVo struct {
 
 // 分时行情
 type TdxFshqVo struct {
-	DateTime       TdxJsonTime `json:"dateTime"`
-	Price          int         `json:"price"`
-	Vol            int         `json:"vol"`
-	VolFlag        int         `json:"volFlag"`
-	PriceRaw       int         `json:"priceRaw"`
-	UnKonwData     int         `json:"unKonwData"`     //不晓得这个是什么，也不知道解析对没
-	UnKonwDataByte []byte      `json:"unKonwDataByte"` //不晓得这个是什么，也不知道解析对没
+	DateTime TdxJsonTime `json:"dateTime"`
+	Price    int         `json:"price"`
+	Vol      int         `json:"vol"`
+	VolFlag  int         `json:"volFlag"`
 }
 
 // 1分钟的线

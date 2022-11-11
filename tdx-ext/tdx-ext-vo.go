@@ -1,7 +1,12 @@
 package tdxext
 
+import "github.com/nie312122330/niexq-tdx/tdx"
+
 // 两家
-type TdxExtCjHqVo struct {
-	StCode string `json:"stCode"`
-	StName string `json:"stName"`
+type TdxExtTodayMoney struct {
+	tdx.TdxFshqVo
+	PreClosePrice int `json:"preClosePrice"`
+	BigInMoney    int `json:"bigInMoney"`
+	BigOutMoney   int `json:"bigOutMoney"`
+	BigMoneyCount int `json:"bigMoneyCount"`
 }

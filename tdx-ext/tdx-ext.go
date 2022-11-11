@@ -1,9 +1,11 @@
 package tdxext
 
 import (
+	"fmt"
 	"log"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/nie312122330/niexq-tdx/tdx"
 )
@@ -85,6 +87,64 @@ func QueryLsFscj(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string) []t
 		return vo0.Hour*3600+vo0.Minus*60+vo0.Second < vo1.Hour*3600+vo1.Minus*60+vo1.Second
 	})
 	return vos
+}
+
+// 获取今日行情与交易金额的关系--- bigMoney元
+func QueryFsHqAndMoney(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string, bigMoney int) (resVos []TdxExtTodayMoney, err error) {
+	fscjVos := QueryLsFscj(tdxConn, date, mkt, stCode)
+	if len(fscjVos) <= 0 {
+		return resVos, fmt.Errorf("未获取到分时成交")
+	}
+	resp, preClosePrice, err := tdxConn.QueryLsFshq(date, byte(mkt), stCode)
+	if nil != err {
+		return resVos, err
+	}
+	//按时间分组 成交数据
+	fscjMaps := make(map[int]*[]tdx.TdxFscjVo)
+	for _, v := range fscjVos {
+		key := v.Hour*60 + v.Minus
+		val, ok := fscjMaps[key]
+		if ok {
+			*val = append(*val, v)
+		} else {
+			fscjMaps[key] = &[]tdx.TdxFscjVo{v}
+		}
+	}
+
+	getBigInfo := func(time int) (b, s, c int) {
+		fscjTimeDatas, ok := fscjMaps[time]
+		if !ok {
+			return b, s, c
+		}
+		//0 买，1-卖,2-竞价或平盘买入
+		for _, v := range *fscjTimeDatas {
+			if v.Price*v.Vol >= bigMoney {
+				if v.Buyorsell == 0 {
+					b += v.Price * v.Vol
+				} else {
+					s += v.Price * v.Vol
+				}
+			}
+		}
+
+		return b, s, b - s
+	}
+	moneyCount := 0
+	for _, vo := range resp.Datas {
+		voTime := time.Time(vo.DateTime)
+		//计算买单，卖单
+		b, s, c := getBigInfo(voTime.Hour()*60 + voTime.Minute())
+		moneyCount += c
+		//获取这一分钟的 大单
+		resVos = append(resVos, TdxExtTodayMoney{
+			TdxFshqVo:     vo,
+			PreClosePrice: preClosePrice,
+			BigInMoney:    b,
+			BigOutMoney:   s,
+			BigMoneyCount: moneyCount,
+		})
+	}
+	return resVos, nil
 }
 
 // 内部方法，查询今日分时成交【循环组装分页数据】

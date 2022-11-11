@@ -231,13 +231,10 @@ func (tc *TdxConn) QueryTodayFshq(mkt byte, stCode string) (resuls *TdxRespBaseV
 	//上一日的收盘价
 	closePrice := FloatXNumToInt(float64(DataReadFloat(vo.BodyData, &pos, 4)), 100)
 	//读取分时行情的方法
-	readFshqFunc := func(pData []byte, pPos *int, curPrice int, first bool) (pirce, volFlag, vol, priceRaw, unKonwData int, unKonwDataByte []byte) {
+	readFshqFunc := func(pData []byte, pPos *int, curPrice int, first bool) (pirce, volFlag, vol int) {
 		volFlag = 0
 		price_raw := DataReadSignNum(pData, &pos)
-		// startPos := pos
-		// unKonwData = DataReadSignNum(pData, &pos)
-		// unkd := pData[startPos:pos]
-
+		DataReadSignNum(pData, &pos)
 		vol = DataReadSignNum(vo.BodyData, &pos)
 		last_price := 0
 		if first {
@@ -256,24 +253,21 @@ func (tc *TdxConn) QueryTodayFshq(mkt byte, stCode string) (resuls *TdxRespBaseV
 			}
 			last_price = curPrice + price_raw
 		}
-		return last_price, volFlag, vol, price_raw, unKonwData, []byte{}
+		return last_price, volFlag, vol
 	}
 	//第一次读取
-	curPrice, volFlag, vol, priceRaw, unKonwData, unKonwDataByte := readFshqFunc(vo.BodyData, &pos, closePrice, true)
+	curPrice, volFlag, vol := readFshqFunc(vo.BodyData, &pos, closePrice, true)
 	curTime, _ := time.Parse(TIME_LAYOUT, fmt.Sprintf("%s 09:30:00", dateStr))
 	datas = append(datas, TdxFshqVo{
-		DateTime:       TdxJsonTime(curTime),
-		Price:          curPrice,
-		UnKonwData:     unKonwData,
-		Vol:            vol,
-		VolFlag:        volFlag,
-		PriceRaw:       priceRaw,
-		UnKonwDataByte: unKonwDataByte,
+		DateTime: TdxJsonTime(curTime),
+		Price:    curPrice,
+		Vol:      vol,
+		VolFlag:  volFlag,
 	})
 	//读取剩余的数据,因为第一条已经读取了，所以i=1
 
 	for i := int16(1); i < dataCount; i++ {
-		curPrice, volFlag, vol, priceRaw, unKonwData, unKonwDataByte = readFshqFunc(vo.BodyData, &pos, curPrice, false)
+		curPrice, volFlag, vol = readFshqFunc(vo.BodyData, &pos, curPrice, false)
 		h := 0
 		m := 0
 		if i < 30 {
@@ -297,13 +291,10 @@ func (tc *TdxConn) QueryTodayFshq(mkt byte, stCode string) (resuls *TdxRespBaseV
 		curTimestr := fmt.Sprintf("%s %02d:%02d:00", dateStr, h, m)
 		curTime, _ := time.Parse(TIME_LAYOUT, curTimestr)
 		datas = append(datas, TdxFshqVo{
-			DateTime:       TdxJsonTime(curTime),
-			Price:          curPrice,
-			UnKonwData:     unKonwData,
-			Vol:            vol,
-			VolFlag:        volFlag,
-			PriceRaw:       priceRaw,
-			UnKonwDataByte: unKonwDataByte,
+			DateTime: TdxJsonTime(curTime),
+			Price:    curPrice,
+			Vol:      vol,
+			VolFlag:  volFlag,
 		})
 	}
 	//赋值
@@ -339,13 +330,10 @@ func (tc *TdxConn) QueryLsFshq(date int32, mkt byte, stCode string) (resuls *Tdx
 	closePrice := FloatXNumToInt(float64(DataReadFloat(vo.BodyData, &pos, 4)), 100)
 	//读取分时行情的方法
 
-	readFshqFunc := func(pData []byte, pPos *int, curPrice int, first bool) (pirce, volFlag, vol, priceRaw, unKonwData int, unKonwDataByte []byte) {
+	readFshqFunc := func(pData []byte, pPos *int, curPrice int, first bool) (pirce, volFlag, vol int) {
 		volFlag = 0
 		price_raw := DataReadSignNum(pData, &pos)
-		startPos := pos
-		unKonwData = DataReadSignNum(pData, &pos)
-		unkd := pData[startPos:pos]
-
+		DataReadSignNum(pData, &pos) //这个数据必须读，但是又不晓得是什么
 		vol = DataReadSignNum(vo.BodyData, &pos)
 		last_price := 0
 		if first {
@@ -364,24 +352,21 @@ func (tc *TdxConn) QueryLsFshq(date int32, mkt byte, stCode string) (resuls *Tdx
 			}
 			last_price = curPrice + price_raw
 		}
-		return last_price, volFlag, vol, price_raw, unKonwData, unkd
+		return last_price, volFlag, vol
 	}
 	//第一次读取
-	curPrice, volFlag, vol, priceRaw, unKonwData, unKonwDataByte := readFshqFunc(vo.BodyData, &pos, closePrice, true)
+	curPrice, volFlag, vol := readFshqFunc(vo.BodyData, &pos, closePrice, true)
 	curTime, _ := time.Parse(TIME_LAYOUT, fmt.Sprintf("%s 09:30:00", dateStr))
 	datas = append(datas, TdxFshqVo{
-		DateTime:       TdxJsonTime(curTime),
-		Price:          curPrice,
-		UnKonwData:     unKonwData,
-		Vol:            vol,
-		VolFlag:        volFlag,
-		PriceRaw:       priceRaw,
-		UnKonwDataByte: unKonwDataByte,
+		DateTime: TdxJsonTime(curTime),
+		Price:    curPrice,
+		Vol:      vol,
+		VolFlag:  volFlag,
 	})
 	//读取剩余的数据,因为第一条已经读取了，所以i=1
 
 	for i := int16(1); i < dataCount; i++ {
-		curPrice, volFlag, vol, priceRaw, unKonwData, unKonwDataByte = readFshqFunc(vo.BodyData, &pos, curPrice, false)
+		curPrice, volFlag, vol = readFshqFunc(vo.BodyData, &pos, curPrice, false)
 		h := 0
 		m := 0
 		if i < 30 {
@@ -405,13 +390,10 @@ func (tc *TdxConn) QueryLsFshq(date int32, mkt byte, stCode string) (resuls *Tdx
 		curTimestr := fmt.Sprintf("%s %02d:%02d:00", dateStr, h, m)
 		curTime, _ := time.Parse(TIME_LAYOUT, curTimestr)
 		datas = append(datas, TdxFshqVo{
-			DateTime:       TdxJsonTime(curTime),
-			Price:          curPrice,
-			UnKonwData:     unKonwData,
-			Vol:            vol,
-			VolFlag:        volFlag,
-			PriceRaw:       priceRaw,
-			UnKonwDataByte: unKonwDataByte,
+			DateTime: TdxJsonTime(curTime),
+			Price:    curPrice,
+			Vol:      vol,
+			VolFlag:  volFlag,
 		})
 	}
 	//赋值
