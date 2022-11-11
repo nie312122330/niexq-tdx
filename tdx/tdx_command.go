@@ -27,7 +27,8 @@ const TDX_FUNC_LOGIN uint16 = 0x000d
 const TDX_FUNC_LOGIN2 uint16 = 0x0fdb
 const TDX_FUNC_HEART_BEAT uint16 = 0x0004
 const TDX_FUNC_KBAR uint16 = 0x052d
-const TDX_FUNC_FSHQ uint16 = 0x0fb4
+const TDX_FUNC_LSFSHQ uint16 = 0x0fb4
+const TDX_FUNC_TODAY_FSHQ uint16 = 0x0537 //0x051d
 const TDX_FUNC_FSCJ uint16 = 0x0fc5
 const TDX_FUNC_LSFSCJ uint16 = 0x0fb5
 const TDX_FUNC_JHJY uint16 = 0x056a
@@ -102,10 +103,20 @@ func CmdLsFscj(date int32, mkt int16, stCode string, startPos, endPos int16) []b
 	return outData
 }
 
-// 分时行情-可传入日期
+// 今日分时行情-可传入日期
+func CmdTodayFshq(mkt int16, stCode string) []byte {
+	outData := HexStrToBytes("0c1b080001010e000e00")
+	outData = append(outData, NumToBytes(TDX_FUNC_TODAY_FSHQ, true)...)
+	outData = append(outData, NumToBytes(mkt, true)...)
+	outData = append(outData, []byte(stCode)...)
+	outData = append(outData, NumToBytes(uint32(0), true)...)
+	return outData
+}
+
+// 历史分时行情-可传入日期
 func CmdFshq(date int32, mkt byte, stCode string) []byte {
 	outData := HexStrToBytes("0c01300001010d000d00")
-	outData = append(outData, NumToBytes(TDX_FUNC_FSHQ, true)...)
+	outData = append(outData, NumToBytes(TDX_FUNC_LSFSHQ, true)...)
 	outData = append(outData, NumToBytes(date, true)...)
 	outData = append(outData, NumToBytes(mkt, true)...)
 	outData = append(outData, []byte(stCode)...)

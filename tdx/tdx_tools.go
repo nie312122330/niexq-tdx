@@ -36,6 +36,7 @@ func DataReadFloat(data []byte, inPos *int, dataSize int) (rst float32) {
 	*inPos = *inPos + dataSize
 	return vol
 }
+
 func DataReadint32(data []byte, inPos *int) (rst int32) {
 	num := int32(0)
 	BytesToVo(data[*inPos:*inPos+4], &num, true)
@@ -111,7 +112,7 @@ func BytesToHexStr(data []byte) string {
 	return inDataHex
 }
 
-func NumToBytes[T byte | int8 | uint16 | int16 | int32](num T, minOrder bool) []byte {
+func NumToBytes[T byte | int8 | uint16 | int16 | int32 | uint32](num T, minOrder bool) []byte {
 	bytebuf := bytes.NewBuffer([]byte{})
 	if minOrder {
 		binary.Write(bytebuf, binary.LittleEndian, num)
