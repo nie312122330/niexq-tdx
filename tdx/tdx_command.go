@@ -29,6 +29,7 @@ const TDX_FUNC_HEART_BEAT uint16 = 0x0004
 const TDX_FUNC_KBAR uint16 = 0x052d
 const TDX_FUNC_FSHQ uint16 = 0x0fb4
 const TDX_FUNC_FSCJ uint16 = 0x0fc5
+const TDX_FUNC_LSFSCJ uint16 = 0x0fb5
 const TDX_FUNC_JHJY uint16 = 0x056a
 
 func CmdBytesLogin1() []byte {
@@ -81,6 +82,19 @@ func CmdJhjj(mkt int16, stCode string) []byte {
 func CmdFscj(mkt int16, stCode string, startPos, endPos int16) []byte {
 	outData := HexStrToBytes("0c17080101010e000e00") //c50f
 	outData = append(outData, NumToBytes(TDX_FUNC_FSCJ, true)...)
+	outData = append(outData, NumToBytes(mkt, true)...)
+	outData = append(outData, []byte(stCode)...)
+	outData = append(outData, NumToBytes(startPos, true)...)
+	outData = append(outData, NumToBytes(endPos, true)...)
+	return outData
+}
+
+// 历史分时成交
+func CmdLsFscj(date int32, mkt int16, stCode string, startPos, endPos int16) []byte {
+	//0c 01 30 01 00 01 12 00 12 00 b5 0f
+	outData := HexStrToBytes("0c013001000112001200") //c50f
+	outData = append(outData, NumToBytes(TDX_FUNC_LSFSCJ, true)...)
+	outData = append(outData, NumToBytes(date, true)...)
 	outData = append(outData, NumToBytes(mkt, true)...)
 	outData = append(outData, []byte(stCode)...)
 	outData = append(outData, NumToBytes(startPos, true)...)

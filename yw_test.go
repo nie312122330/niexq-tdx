@@ -52,13 +52,22 @@ func TestGBK2UTF8(t *testing.T) {
 
 // 测试  分时成交
 func TestQueryFscj(t *testing.T) {
-	res, _ := tdxConn.QueryFscj(1, "000025", 3200, 10000)
+	res, _ := tdxConn.QueryFscj(0, "002197", 0, 1000)
 	log.Printf("分时成交返回数据【%d】条\r\n", len(res.Datas))
+}
+
+// 测试  历史分时成交
+func TestQueryLsFscj(t *testing.T) {
+	vos := tdxConn.QueryLsFscjFull(20221110, 0, "002197")
+	for _, v := range vos {
+		log.Printf("%v:%v:%v %v  %v  %v \n", v.Hour, v.Minus, v.Second, v.Price, v.Vol, v.Buyorsell)
+	}
+	log.Printf("历史分时成交返回数据【%d】条\r\n", len(vos))
 }
 
 // 测试  分时行情
 func TestQueryFshq(t *testing.T) {
-	res2, pc, _ := tdxConn.QueryFshq(20221104, 1, "600519")
+	res2, pc, _ := tdxConn.QueryFshq(20221110, 0, "002197")
 	sum := 0
 	for _, v := range res2.Datas {
 		sum += v.Price

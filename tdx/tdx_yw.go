@@ -155,6 +155,36 @@ func (tc *TdxConn) QueryTodayFscj(mkt int16, stCode string) []TdxFscjVo {
 	return vos
 }
 
+func (tc *TdxConn) QueryLsFscjFull(date int32, mkt int16, stCode string) []TdxFscjVo {
+	vos := []TdxFscjVo{}
+	tc.queryAllLsFscj(&vos, date, mkt, stCode, 0)
+
+	sort.SliceStable(vos, func(i int, j int) bool {
+		vo0 := vos[i]
+		vo1 := vos[j]
+		return vo0.Hour*3600+vo0.Minus*60+vo0.Second < vo1.Hour*3600+vo1.Minus*60+vo1.Second
+	})
+	return vos
+}
+
+// 内部方法，查询今日的分时成交
+func (tc *TdxConn) queryAllLsFscj(vos *[]TdxFscjVo, date int32, mkt int16, stCode string, start int16) {
+	resp, err := tc.QueryLsFscj(date, mkt, stCode, start, 1000)
+	if nil != err {
+		log.Printf("【%s】查询分时成交报错,%v", stCode, err)
+		return
+	}
+	if len(resp.Datas) <= 0 {
+		return
+	}
+	if len(resp.Datas) < 1000 {
+		*vos = append(*vos, resp.Datas...)
+		return
+	}
+	*vos = append(*vos, resp.Datas...)
+	tc.queryAllLsFscj(vos, date, mkt, stCode, start+1000)
+}
+
 // 内部方法，查询今日的分时成交
 func (tc *TdxConn) queryAllFscj(vos *[]TdxFscjVo, mkt int16, stCode string, start int16) {
 	resp, err := tc.QueryFscj(mkt, stCode, start, 1000)
@@ -173,7 +203,7 @@ func (tc *TdxConn) queryAllFscj(vos *[]TdxFscjVo, mkt int16, stCode string, star
 	tc.queryAllFscj(vos, mkt, stCode, start+1000)
 }
 
-// 查询分时成交---暂不使用，业务中没有具体的参考
+// 查询分时成交
 func (tc *TdxConn) QueryFscj(mkt int16, stCode string, startPos, endPost int16) (resuls *TdxRespBaseVo[TdxFscjVo], err error) {
 	resultVo := &TdxRespBaseVo[TdxFscjVo]{
 		Market:  int(mkt),
@@ -214,6 +244,58 @@ func (tc *TdxConn) QueryFscj(mkt int16, stCode string, startPos, endPost int16) 
 			Price:     int(last_price),
 			Vol:       int(vol),
 			Num:       int(num),
+			Buyorsell: int(buyorsell),
+		})
+	}
+	//赋值
+	resultVo.Datas = datas
+	return resultVo, nil
+}
+
+// 查询历史分时成交
+func (tc *TdxConn) QueryLsFscj(date int32, mkt int16, stCode string, startPos, endPost int16) (resuls *TdxRespBaseVo[TdxFscjVo], err error) {
+	resultVo := &TdxRespBaseVo[TdxFscjVo]{
+		Market:  int(mkt),
+		StCode:  stCode,
+		TdxFunc: TDX_FUNC_LSFSCJ,
+	}
+	vo, err := tc.SendData(CmdLsFscj(date, mkt, stCode, startPos, endPost))
+	if nil != err {
+		return resultVo, err
+	}
+
+	dataCount := int16(0)
+	BytesToVo(vo.BodyData[0:2], &dataCount, true)
+	pos := 2
+	//上一日的收盘价
+	closePrice := FloatXNumToInt(float64(DataReadFloat(vo.BodyData, &pos, 4)), 100)
+	fmt.Println(closePrice)
+	last_price := 0
+
+	datas := []TdxFscjVo{}
+	for i := int16(0); i < dataCount; i++ {
+		//解析时间
+		h, m := DataReadTime(vo.BodyData, &pos, 2)
+		//解析金额
+		price_raw := DataReadSignNum(vo.BodyData, &pos)
+		//解析量
+		vol := DataReadSignNum(vo.BodyData, &pos)
+		//解析笔数  - 历史分时成交 没有笔数
+		// num := DataReadSignNum(vo.BodyData, &pos)
+		//解析买卖，2-竞价，1-卖，0买
+		buyorsell := DataReadSignNum(vo.BodyData, &pos)
+		//移动位置
+		DataReadSignNum(vo.BodyData, &pos)
+
+		last_price = last_price + price_raw
+
+		datas = append(datas, TdxFscjVo{
+			Hour:      int(h),
+			Minus:     int(m),
+			Second:    int(0),
+			Price:     int(last_price),
+			Vol:       int(vol),
+			Num:       -1,
 			Buyorsell: int(buyorsell),
 		})
 	}
@@ -311,6 +393,8 @@ func (tc *TdxConn) QueryFshq(date int32, mkt byte, stCode string) (resuls *TdxRe
 			h = 14
 			m = int(i - 180)
 		}
+		//1011000000000110
+
 		curTimestr := fmt.Sprintf("%s %02d:%02d:00", dateStr, h, m)
 		curTime, _ := time.Parse(TIME_LAYOUT, curTimestr)
 		datas = append(datas, TdxFshqVo{

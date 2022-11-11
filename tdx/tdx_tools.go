@@ -69,14 +69,16 @@ func DataReadSignNum(data []byte, pos *int) int {
 	pos_byte := 6
 	bdata := int(data[*pos])
 	*pos = *pos + 1
+	intdata := bdata & 0x3F
 
 	//确定是否有符号
 	sign := false
 	if bdata&0x40 > 0 {
 		sign = true
+	} else {
+		sign = false
 	}
 
-	intdata := bdata & 0x3f
 	if bdata&0x80 > 0 {
 		for {
 			bdata = int(data[*pos])
@@ -165,6 +167,7 @@ func StrInt2Int(str string) int {
 	r, err := strconv.ParseInt(str, 10, 32)
 	if nil != err {
 		panic(err)
+		//1138  1143 1150 1154 1157 1159 1160 1161
 	}
 	return int(r)
 }
