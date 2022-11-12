@@ -191,3 +191,11 @@ func MktByStCode(stCode string) int16 {
 	}
 	return -1
 }
+
+// 计算涨停价
+func ZtPrice(preClosePrice int) int {
+	ztPrice := float64(preClosePrice) * 1.1
+	fmt.Println(ztPrice)
+	i, _ := strconv.Atoi(fmt.Sprintf("%1.00f", ztPrice))
+	return i
+}
