@@ -24,14 +24,6 @@ func init() {
 	tdxConn = tdxConn1
 }
 
-// 测试创建连接池
-func TestCreateTdxConnPool(t *testing.T) {
-	tdxext.InitPool(10, "119.147.212.81:7709")
-	tdxConn1, _ := tdxext.GetConn()
-	res, _ := tdxConn1.QueryTodayPageFscj(0, "002197", 0, 1000)
-	fmt.Println(res.Datas)
-}
-
 // 测试  读取股票列表
 func TestQueryStList(t *testing.T) {
 	datas := tdxext.QueryTodayStcokList(tdxConn)
@@ -56,12 +48,6 @@ func TestGBK2UTF8(t *testing.T) {
 	enc := mahonia.NewDecoder("GBK")
 	result := enc.ConvertString(string(readDatas))
 	fmt.Println(result)
-}
-
-// 测试  分时成交[分页]
-func TestQueryTodayPageFscj(t *testing.T) {
-	res, _ := tdxConn.QueryTodayPageFscj(0, "002197", 0, 1000)
-	log.Printf("分时成交返回数据【%d】条\r\n", len(res.Datas))
 }
 
 // 测试  历史分时成交
@@ -124,15 +110,6 @@ func TestQueryDatesMaxVolAndClosePrice(t *testing.T) {
 func TestQueryStName(t *testing.T) {
 	name, _ := tdx.QueryStName(0, "000630", 3)
 	log.Printf("%s\n", name)
-}
-
-// 测试 查询今日的所有分时成交
-func TestQueryTodayFscj(t *testing.T) {
-	datas := tdxext.QueryTodayFscj(tdxConn, 0, "002651")
-	fmt.Println(len(datas))
-	for _, v := range datas {
-		fmt.Printf("%v\n", v)
-	}
 }
 
 // 测试 查询历史的所有分时成交

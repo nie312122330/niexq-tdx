@@ -104,7 +104,7 @@ func (tc *TdxConn) QueryTodayJhjj(mkt int16, stCode string) (resuls *TdxRespBase
 	return resultVo, nil
 }
 
-// 查询今日分时成交-分页
+// 查询今日分时成交-分页 【昨日收盘价有问题， 不要使用】
 func (tc *TdxConn) QueryTodayPageFscj(mkt int16, stCode string, startPos, endPost int16) (resuls *TdxRespBaseVo[TdxFscjVo], err error) {
 	resultVo := &TdxRespBaseVo[TdxFscjVo]{
 		Market:  int(mkt),
@@ -176,8 +176,9 @@ func (tc *TdxConn) QueryLsPageFscj(date int32, mkt int16, stCode string, startPo
 	FloatXNumToInt(float64(DataReadFloat(vo.BodyData, &pos, 4)), 100)
 
 	//上一日的收盘价
+	preClosePrice := FloatXNumToInt(float64(DataReadFloat(vo.BodyData, &pos, 4)), 100)
+	//上一次的价格
 	last_price := 0
-	preClosePrice := -1
 
 	datas := []TdxFscjVo{}
 	for i := int16(0); i < dataCount; i++ {
@@ -193,12 +194,7 @@ func (tc *TdxConn) QueryLsPageFscj(date int32, mkt int16, stCode string, startPo
 		buyorsell := DataReadSignNum(vo.BodyData, &pos)
 		//移动位置
 		DataReadSignNum(vo.BodyData, &pos)
-		if preClosePrice == -1 {
-			preClosePrice = price_raw
-		}
-
 		last_price = last_price + price_raw
-
 		datas = append(datas, TdxFscjVo{
 			Hour:      int(h),
 			Minus:     int(m),

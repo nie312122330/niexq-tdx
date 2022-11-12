@@ -65,18 +65,6 @@ func QueryDatesMaxVolAndClosePrice(tdxConn *tdx.TdxConn, dates []int32, mkt byte
 	return closePrice, maxVol
 }
 
-// 查询今日分时成交[所有记录]
-func QueryTodayFscj(tdxConn *tdx.TdxConn, mkt int16, stCode string) []tdx.TdxFscjVo {
-	vos := []tdx.TdxFscjVo{}
-	innerQueryTodayFscj(tdxConn, &vos, mkt, stCode, 0)
-	sort.SliceStable(vos, func(i int, j int) bool {
-		vo0 := vos[i]
-		vo1 := vos[j]
-		return vo0.Hour*3600+vo0.Minus*60+vo0.Second < vo1.Hour*3600+vo1.Minus*60+vo1.Second
-	})
-	return vos
-}
-
 // 统计历史分时成交数据[所有记录]
 func CountDateLsFscj(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string, bigMoney int) (b, s, c int) {
 	vos := QueryLsFscj(tdxConn, date, mkt, stCode)
@@ -171,24 +159,6 @@ func QueryFsHqAndMoney(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode strin
 		})
 	}
 	return resVos, nil
-}
-
-// 内部方法，查询今日分时成交【循环组装分页数据】
-func innerQueryTodayFscj(tdxConn *tdx.TdxConn, vos *[]tdx.TdxFscjVo, mkt int16, stCode string, start int16) {
-	resp, err := tdxConn.QueryTodayPageFscj(mkt, stCode, start, 1000)
-	if nil != err {
-		log.Printf("【%s】查询今日分时成交报错,%v", stCode, err)
-		return
-	}
-	if len(resp.Datas) <= 0 {
-		return
-	}
-	if len(resp.Datas) < 1000 {
-		*vos = append(*vos, resp.Datas...)
-		return
-	}
-	*vos = append(*vos, resp.Datas...)
-	innerQueryTodayFscj(tdxConn, vos, mkt, stCode, start+1000)
 }
 
 // 内部方法，查询历史分时成交【循环组装分页数据】
