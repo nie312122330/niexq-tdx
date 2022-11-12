@@ -120,6 +120,7 @@ func (tc *TdxConn) QueryTodayPageFscj(mkt int16, stCode string, startPos, endPos
 	BytesToVo(vo.BodyData[0:2], &dataCount, true)
 	pos := 2
 	last_price := 0
+	preClosePrice := -1
 
 	datas := []TdxFscjVo{}
 	for i := int16(0); i < dataCount; i++ {
@@ -135,7 +136,9 @@ func (tc *TdxConn) QueryTodayPageFscj(mkt int16, stCode string, startPos, endPos
 		buyorsell := DataReadSignNum(vo.BodyData, &pos)
 		//移动位置
 		DataReadSignNum(vo.BodyData, &pos)
-
+		if preClosePrice == -1 {
+			preClosePrice = price_raw
+		}
 		last_price = last_price + price_raw
 
 		datas = append(datas, TdxFscjVo{
@@ -146,6 +149,7 @@ func (tc *TdxConn) QueryTodayPageFscj(mkt int16, stCode string, startPos, endPos
 			Vol:       int(vol),
 			Num:       int(num),
 			Buyorsell: int(buyorsell),
+			PreClose:  preClosePrice,
 		})
 	}
 	//赋值
@@ -173,6 +177,7 @@ func (tc *TdxConn) QueryLsPageFscj(date int32, mkt int16, stCode string, startPo
 
 	//上一日的收盘价
 	last_price := 0
+	preClosePrice := -1
 
 	datas := []TdxFscjVo{}
 	for i := int16(0); i < dataCount; i++ {
@@ -188,6 +193,9 @@ func (tc *TdxConn) QueryLsPageFscj(date int32, mkt int16, stCode string, startPo
 		buyorsell := DataReadSignNum(vo.BodyData, &pos)
 		//移动位置
 		DataReadSignNum(vo.BodyData, &pos)
+		if preClosePrice == -1 {
+			preClosePrice = price_raw
+		}
 
 		last_price = last_price + price_raw
 
@@ -199,6 +207,7 @@ func (tc *TdxConn) QueryLsPageFscj(date int32, mkt int16, stCode string, startPo
 			Vol:       int(vol),
 			Num:       -1,
 			Buyorsell: int(buyorsell),
+			PreClose:  preClosePrice,
 		})
 	}
 	//赋值

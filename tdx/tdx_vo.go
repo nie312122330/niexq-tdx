@@ -36,6 +36,7 @@ type TdxFscjVo struct {
 	Vol       int `json:"vol"`
 	Num       int `json:"num"`
 	Buyorsell int `json:"buyorsell"`
+	PreClose  int `json:"preClose"`
 }
 
 // 分时行情
