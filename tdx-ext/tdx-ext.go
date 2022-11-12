@@ -69,15 +69,14 @@ func QueryDatesMaxVolAndClosePrice(tdxConn *tdx.TdxConn, dates []int32, mkt byte
 func CountDateLsFscj(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string, bigMoney int) (b, s, c int) {
 	vos := QueryLsFscj(tdxConn, date, mkt, stCode)
 	for _, v := range vos {
-
 		//0 买，1-卖,2-竞价或平盘买入
-		if v.Vol*v.Price >= bigMoney {
-			if v.Buyorsell == 0 {
-				b += v.Vol * v.Price
-			} else if v.Buyorsell == 1 {
-				//涨停价需要看成主动性买单
-				if v.Price == tdx.ZtPrice(v.PreClose) {
-					b += v.Vol * v.Price
+		//涨停价需要看成主动性买单
+		if v.Price == tdx.ZtPrice(v.PreClose) {
+			b += v.Price * v.Vol
+		} else {
+			if v.Price*v.Vol >= bigMoney {
+				if v.Buyorsell == 0 {
+					b += v.Price * v.Vol
 				} else {
 					s += v.Vol * v.Price
 				}
@@ -128,13 +127,13 @@ func QueryFsHqAndMoney(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode strin
 		}
 		//0 买，1-卖,2-竞价或平盘买入
 		for _, v := range *fscjTimeDatas {
-			if v.Price*v.Vol >= bigMoney {
-				if v.Buyorsell == 0 {
-					b += v.Price * v.Vol
-				} else {
-					//涨停价需要看成主动性买单
-					if v.Price == tdx.ZtPrice(v.PreClose) {
-						b += v.Vol * v.Price
+			//涨停价需要看成主动性买单
+			if v.Price == tdx.ZtPrice(v.PreClose) {
+				b += v.Price * v.Vol
+			} else {
+				if v.Price*v.Vol >= bigMoney {
+					if v.Buyorsell == 0 {
+						b += v.Price * v.Vol
 					} else {
 						s += v.Vol * v.Price
 					}
