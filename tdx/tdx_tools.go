@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -194,7 +195,10 @@ func MktByStCode(stCode string) int16 {
 
 // 计算涨停价
 func ZtPrice(preClosePrice int) int {
-	ztPrice := float64(preClosePrice) * 1.1
-	i, _ := strconv.Atoi(fmt.Sprintf("%1.00f", ztPrice))
+	ztPrice := float64(preClosePrice) * float64(1.1)
+	ztPrice += float64(0.5)
+	ztPrice = math.Ceil(ztPrice)
+	intStr := fmt.Sprintf("%1.0f", ztPrice)
+	i, _ := strconv.Atoi(intStr)
 	return i
 }
