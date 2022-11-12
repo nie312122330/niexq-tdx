@@ -6,10 +6,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"math"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/shopspring/decimal"
 
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
@@ -194,11 +195,11 @@ func MktByStCode(stCode string) int16 {
 }
 
 // 计算涨停价
-func ZtPrice(preClosePrice int) int {
-	ztPrice := float64(preClosePrice) * float64(1.1)
-	ztPrice += float64(0.5)
-	ztPrice = math.Ceil(ztPrice)
-	intStr := fmt.Sprintf("%1.0f", ztPrice)
+func ZtPrice(preClosePrice int, ztfd float64) int {
+	ztMoneyFloat := float64(preClosePrice) / float64(100) * (ztfd + 1)
+	ztmoney := decimal.NewFromFloat(ztMoneyFloat)
+	ztPrice, _ := ztmoney.Round(2).Float64()
+	intStr := fmt.Sprintf("%1.0f", ztPrice*100)
 	i, _ := strconv.Atoi(intStr)
 	return i
 }

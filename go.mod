@@ -8,4 +8,7 @@ require (
 	golang.org/x/text v0.3.7
 )
 
-require github.com/gofrs/uuid v3.3.0+incompatible // indirect
+require (
+	github.com/gofrs/uuid v3.3.0+incompatible // indirect
+	github.com/shopspring/decimal v1.3.1 // indirect
+)

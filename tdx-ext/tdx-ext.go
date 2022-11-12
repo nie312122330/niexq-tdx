@@ -71,7 +71,7 @@ func CountDateLsFscj(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string,
 	for _, v := range vos {
 		//0 买，1-卖,2-竞价或平盘买入
 		//涨停价需要看成主动性买单
-		if v.Price == tdx.ZtPrice(v.PreClose) {
+		if v.Price == tdx.ZtPrice(v.PreClose, 0.1) {
 			b += v.Price * v.Vol
 		} else {
 			if v.Price*v.Vol >= bigMoney {
@@ -128,7 +128,7 @@ func QueryFsHqAndMoney(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode strin
 		//0 买，1-卖,2-竞价或平盘买入
 		for _, v := range *fscjTimeDatas {
 			//涨停价需要看成主动性买单
-			if v.Price == tdx.ZtPrice(v.PreClose) {
+			if v.Price == tdx.ZtPrice(v.PreClose, 0.1) {
 				b += v.Price * v.Vol
 			} else {
 				if v.Price*v.Vol >= bigMoney {

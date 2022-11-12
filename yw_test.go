@@ -130,3 +130,7 @@ func Test1(t *testing.T) {
 		fmt.Printf("%v %v %v %v %v %v\n", v.DateTime.ToStr(), v.Price, v.Vol, v.BigInMoney, v.BigOutMoney, v.BigMoneyCount)
 	}
 }
+
+func TestZtPrice(t *testing.T) {
+	tdx.ZtPrice(1275, 0.1)
+}
