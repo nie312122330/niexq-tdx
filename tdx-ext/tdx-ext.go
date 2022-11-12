@@ -77,6 +77,22 @@ func QueryTodayFscj(tdxConn *tdx.TdxConn, mkt int16, stCode string) []tdx.TdxFsc
 	return vos
 }
 
+// 统计历史分时成交数据[所有记录]
+func CountDateLsFscj(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string, bigMoney int) (b, s, c int) {
+	vos := QueryLsFscj(tdxConn, date, mkt, stCode)
+	for _, v := range vos {
+		//0 买，1-卖,2-竞价或平盘买入
+		if v.Vol*v.Price >= bigMoney {
+			if v.Buyorsell == 0 {
+				b += v.Vol * v.Price
+			} else if v.Buyorsell == 1 {
+				s += v.Vol * v.Price
+			}
+		}
+	}
+	return b, s, b - s
+}
+
 // 查询历史所有的分时成交[所有记录]
 func QueryLsFscj(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string) []tdx.TdxFscjVo {
 	vos := []tdx.TdxFscjVo{}
