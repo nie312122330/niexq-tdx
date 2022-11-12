@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 	"time"
 
 	"golang.org/x/text/encoding/simplifiedchinese"
@@ -180,4 +181,13 @@ func GbkToUtf8(s []byte) ([]byte, error) {
 		return nil, e
 	}
 	return d, nil
+}
+
+func MktByStCode(stCode string) int16 {
+	if strings.HasPrefix(stCode, "00") || strings.HasPrefix(stCode, "30") {
+		return 0
+	} else if strings.HasPrefix(stCode, "60") || strings.HasPrefix(stCode, "68") {
+		return 1
+	}
+	return -1
 }
