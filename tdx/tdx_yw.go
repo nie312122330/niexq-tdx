@@ -242,7 +242,7 @@ func (tc *TdxConn) QueryTodayFshq(mkt byte, stCode string, todayInt int, preClos
 	datas = append(datas, TdxFshqVo{
 		DateTime: TdxJsonTime(TdxCalFsTimeByDayInt(todayInt, 0).Time),
 		Price:    openPrice,
-		AvgPrice: openAvgPrice,
+		AvgPrice: openAvgPrice / 100,
 		Vol:      openVol,
 		VolFlag:  TdxIf(openPrice > preClosePrice, 1, TdxIf(openPrice == preClosePrice, 0, -1)),
 	})
@@ -252,21 +252,26 @@ func (tc *TdxConn) QueryTodayFshq(mkt byte, stCode string, todayInt int, preClos
 		changeAvgPrice := DataReadSignNum(vo.BodyData, &pos)
 		curVol := DataReadSignNum(vo.BodyData, &pos)
 		curPrice := openPrice + changePrice
-		curAvgPrice := openAvgPrice + changeAvgPrice
-		datas = append(datas, TdxFshqVo{
+		curAvgPrice := (openAvgPrice + changeAvgPrice) / 100
+		vo := TdxFshqVo{
 			DateTime: TdxJsonTime(TdxCalFsTimeByDayInt(todayInt, i).Time),
 			Price:    curPrice,
 			AvgPrice: curAvgPrice,
 			Vol:      curVol,
 			VolFlag:  TdxIf(curPrice > lastPrice, 1, TdxIf(curPrice == lastPrice, 0, -1)),
-		})
+		}
+		if i == 239 {
+			//强制最后一根为白色
+			vo.VolFlag = 0
+		}
+		datas = append(datas, vo)
 		lastPrice = curPrice
 	}
 	resultVo.Datas = datas
 	return resultVo, preClosePirce, nil
 }
 
-// 历史分时行情
+// 历史分时行情【均价的计算方式不太正确，有偏离，但是偏离不大，基本可用，有可能是0fb4这个命令是之前的功能，不再深入研究了】
 func (tc *TdxConn) QueryLsFshq(date int32, mkt byte, stCode string) (resuls *TdxRespBaseVo[TdxFshqVo], preClosePrice int, err error) {
 	resultVo := &TdxRespBaseVo[TdxFshqVo]{
 		Market:  int(mkt),
@@ -280,86 +285,56 @@ func (tc *TdxConn) QueryLsFshq(date int32, mkt byte, stCode string) (resuls *Tdx
 	if len(vo.BodyData) < 2 {
 		return resultVo, 0, nil
 	}
-	dataCount := int16(0)
-	BytesToVo(vo.BodyData[0:2], &dataCount, true)
-	pos := 2
+
+	pos := 0
+	dataCount := int(DataReadint16(vo.BodyData, &pos))
 	if dataCount <= 0 {
 		return resultVo, 0, errors.New("没有返回数据")
 	}
-	dateStr := fmt.Sprintf("%d", date)
-	dateStr = dateStr[0:4] + "-" + dateStr[4:6] + "-" + dateStr[6:8]
+	//读取上日的收盘价
+	closePrice := FloatXNumToInt(float64(DataReadFloat(vo.BodyData, &pos, 4)), 100)
 
 	datas := []TdxFshqVo{}
-	//上一日的收盘价
-	closePrice := FloatXNumToInt(float64(DataReadFloat(vo.BodyData, &pos, 4)), 100)
-	//读取分时行情的方法
+	//今日开盘价
+	openPrice := DataReadSignNum(vo.BodyData, &pos)
+	//今日均价
+	//均价的计算方式不太正确，有偏离，但是偏离不大，基本可用，有可能是0fb4这个命令是之前的功能，不再深入研究了
+	openAvgPrice := DataReadSignNum(vo.BodyData, &pos)
+	//开盘的量
+	openVol := DataReadSignNum(vo.BodyData, &pos)
 
-	readFshqFunc := func(pData []byte, pPos *int, curPrice int, first bool) (pirce, volFlag, vol int) {
-		volFlag = 0
-		price_raw := DataReadSignNum(pData, &pos)
-		DataReadSignNum(pData, &pos) //这个数据必须读，但是又不晓得是什么
-		vol = DataReadSignNum(vo.BodyData, &pos)
-		last_price := 0
-		if first {
-			//此时是收盘价
-			if price_raw > curPrice {
-				volFlag = 1
-			} else if price_raw < curPrice {
-				volFlag = -1
-			}
-			last_price = price_raw
-		} else {
-			if price_raw > 0 {
-				volFlag = 1
-			} else if price_raw < 0 {
-				volFlag = -1
-			}
-			last_price = curPrice + price_raw
-		}
-		return last_price, volFlag, vol
-	}
-	//第一次读取
-	curPrice, volFlag, vol := readFshqFunc(vo.BodyData, &pos, closePrice, true)
-	curTime, _ := time.Parse(TIME_LAYOUT, fmt.Sprintf("%s 09:30:00", dateStr))
+	//记录当前价格
+	lastPrice := openPrice
+	lastAvgPrice := openAvgPrice
 	datas = append(datas, TdxFshqVo{
-		DateTime: TdxJsonTime(curTime),
-		Price:    curPrice,
-		Vol:      vol,
-		VolFlag:  volFlag,
+		DateTime: TdxJsonTime(TdxCalFsTimeByDayInt(int(date), 0).Time),
+		Price:    openPrice,
+		AvgPrice: openPrice + (lastAvgPrice / 100),
+		Vol:      openVol,
+		VolFlag:  TdxIf(openPrice > preClosePrice, 1, TdxIf(openPrice == preClosePrice, 0, -1)),
 	})
-	//读取剩余的数据,因为第一条已经读取了，所以i=1
+	for i := 1; i < dataCount; i++ {
+		changePrice := DataReadSignNum(vo.BodyData, &pos)
+		changeAvgPrice := DataReadSignNum(vo.BodyData, &pos)
+		curVol := DataReadSignNum(vo.BodyData, &pos)
 
-	for i := int16(1); i < dataCount; i++ {
-		curPrice, volFlag, vol = readFshqFunc(vo.BodyData, &pos, curPrice, false)
-		h := 0
-		m := 0
-		if i < 30 {
-			h = 9
-			m = int(i) + 30
-		} else if i < 90 {
-			h = 10
-			m = int(i - 30)
-		} else if i < 120 {
-			h = 11
-			m = int(i - 90)
-		} else if i < 180 {
-			h = 13
-			m = int(i - 120)
-		} else {
-			h = 14
-			m = int(i - 180)
-		}
-		//1011000000000110
-
-		curTimestr := fmt.Sprintf("%s %02d:%02d:00", dateStr, h, m)
-		curTime, _ := time.Parse(TIME_LAYOUT, curTimestr)
-		datas = append(datas, TdxFshqVo{
-			DateTime: TdxJsonTime(curTime),
+		curPrice := lastPrice + changePrice
+		lastAvgPrice = lastAvgPrice + changeAvgPrice
+		vo := TdxFshqVo{
+			DateTime: TdxJsonTime(TdxCalFsTimeByDayInt(int(date), i).Time),
 			Price:    curPrice,
-			Vol:      vol,
-			VolFlag:  volFlag,
-		})
+			AvgPrice: openPrice + (lastAvgPrice / 100),
+			Vol:      curVol,
+			VolFlag:  TdxIf(curPrice > lastPrice, 1, TdxIf(curPrice == lastPrice, 0, -1)),
+		}
+		if i == 239 {
+			//强制最后一根为白色
+			vo.VolFlag = 0
+		}
+		datas = append(datas, vo)
+		lastPrice = curPrice
 	}
+
 	//赋值
 	resultVo.Datas = datas
 	return resultVo, closePrice, nil

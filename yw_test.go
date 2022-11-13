@@ -61,7 +61,7 @@ func TestQueryLsPageFscj(t *testing.T) {
 
 // 测试  今日分时行情
 func TestQueryTodayFshq(t *testing.T) {
-	res2, _, _ := tdxConn.QueryTodayFshq(1, "600519", 20221111, 147500)
+	res2, _, _ := tdxConn.QueryTodayFshq(0, "002008", 20221111, 2594)
 	for idx, v := range res2.Datas {
 		if idx <= 10 || (idx >= 110 && idx <= 130) || idx >= 230 {
 			log.Printf("%v,%v,%v,%v,%v\n", v.DateTime.ToStr(), v.Price, v.AvgPrice, v.Vol, v.VolFlag)
@@ -71,13 +71,12 @@ func TestQueryTodayFshq(t *testing.T) {
 
 // 测试  历史分时行情
 func TestQueryFshq(t *testing.T) {
-	res2, pc, _ := tdxConn.QueryLsFshq(20221111, 1, "600879")
-	sum := 0
-	for _, v := range res2.Datas {
-		sum += v.Price
-		log.Printf("%v,%v,%v,%v\n", v.DateTime.ToStr(), v.Price, v.Vol, v.VolFlag)
+	res2, _, _ := tdxConn.QueryLsFshq(20221111, 1, "600519")
+	for idx, v := range res2.Datas {
+		if idx <= 10 || (idx >= 110 && idx <= 130) || idx >= 230 {
+			log.Printf("%v,%v,%v,%v,%v\n", v.DateTime.ToStr(), v.Price, v.AvgPrice, v.Vol, v.VolFlag)
+		}
 	}
-	log.Printf("分时行情昨日收盘[%d],长度[%d],第1条为[%v]---%v\n", pc, len(res2.Datas), res2.Datas[0], sum)
 }
 
 // 测试 集合竞价
