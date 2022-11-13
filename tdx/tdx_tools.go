@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nie312122330/niexq-gotools/dateext"
 	"github.com/shopspring/decimal"
 
 	"golang.org/x/text/encoding/simplifiedchinese"
@@ -202,4 +203,32 @@ func ZtPrice(preClosePrice int, ztfd float64) int {
 	intStr := fmt.Sprintf("%1.0f", ztPrice*100)
 	i, _ := strconv.Atoi(intStr)
 	return i
+}
+
+// IF判断
+func TdxIf[T any](cond bool, ok, no T) T {
+	if cond {
+		return ok
+	} else {
+		return no
+	}
+}
+
+// 分时图计算当前时间
+func TdxCalFsTime(year, month, day int, idx int) dateext.Date {
+	// 09:30:00= 9*60+30=570
+	// 13:00:00= 13*60=780  780-120=660 因为中间间隔了2个小时，所以要减去120分钟
+	hour := TdxIf(idx < 120, (570+idx), (660+idx)) / 60
+	minu := TdxIf(idx < 120, (570+idx), (660+idx)) % 60
+	send := 0
+	return dateext.WithDate(year, month, day, hour, minu, send)
+}
+
+// 分时图计算当前时间
+func TdxCalFsTimeByDayInt(dayInt int, idx int) dateext.Date {
+	dateStr := fmt.Sprintf("%d", dayInt)
+	year := StrInt2Int(dateStr[0:4])
+	month := StrInt2Int(dateStr[4:6])
+	day := StrInt2Int(dateStr[6:8])
+	return TdxCalFsTime(year, month, day, idx)
 }

@@ -59,15 +59,19 @@ func TestQueryLsPageFscj(t *testing.T) {
 	log.Printf("历史分时成交返回数据【%d】条\r\n", len(resp.Datas))
 }
 
-// 测试  今日分时行情  --  有问题， 没弄好
+// 测试  今日分时行情
 func TestQueryTodayFshq(t *testing.T) {
-	res2, pc, _ := tdxConn.QueryTodayFshq(1, "600159")
-	log.Printf("分时行情昨日收盘[%d],长度[%d],第1条为[%v]\n", pc, len(res2.Datas), res2.Datas[0])
+	res2, _, _ := tdxConn.QueryTodayFshq(1, "600519", 20221111, 147500)
+	for idx, v := range res2.Datas {
+		if idx <= 10 || (idx >= 110 && idx <= 130) || idx >= 230 {
+			log.Printf("%v,%v,%v,%v,%v\n", v.DateTime.ToStr(), v.Price, v.AvgPrice, v.Vol, v.VolFlag)
+		}
+	}
 }
 
 // 测试  历史分时行情
 func TestQueryFshq(t *testing.T) {
-	res2, pc, _ := tdxConn.QueryLsFshq(20221111, 0, "002197")
+	res2, pc, _ := tdxConn.QueryLsFshq(20221111, 1, "600879")
 	sum := 0
 	for _, v := range res2.Datas {
 		sum += v.Price
@@ -114,7 +118,7 @@ func TestQueryStName(t *testing.T) {
 
 // 测试 查询历史的所有分时成交
 func TestQueryLsFscj(t *testing.T) {
-	datas := tdxext.QueryLsFscj(tdxConn, 20221010, 0, "002651")
+	datas := tdxext.QueryLsFscj(tdxConn, 20221111, 1, "600879")
 	fmt.Println(len(datas))
 	for _, v := range datas {
 		fmt.Printf("%v\n", v)

@@ -43,6 +43,7 @@ type TdxFscjVo struct {
 type TdxFshqVo struct {
 	DateTime TdxJsonTime `json:"dateTime"`
 	Price    int         `json:"price"`
+	AvgPrice int         `json:"avgPrice"`
 	Vol      int         `json:"vol"`
 	VolFlag  int         `json:"volFlag"`
 }
