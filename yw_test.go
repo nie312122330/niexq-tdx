@@ -134,6 +134,14 @@ func Test1(t *testing.T) {
 	}
 }
 
+// 获取今日分时行情与交易金额的关系--- bigMoney元
+func TestQueryTodayFsHqAndMoney(t *testing.T) {
+	datas, _ := tdxext.QueryTodayFsHqAndMoney(tdxConn, 20221114, 0, "002397", 20*10000, 1105)
+	for _, v := range datas {
+		fmt.Printf("%v %v %v %v %v %v\n", v.DateTime.ToStr(), v.Price, v.Vol, v.BigInMoney, v.BigOutMoney, v.BigMoneyCount)
+	}
+}
+
 func TestZtPrice(t *testing.T) {
 	tdx.ZtPrice(1275, 0.1)
 }
