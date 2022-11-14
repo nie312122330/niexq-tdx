@@ -66,19 +66,19 @@ func QueryDatesMaxVolAndClosePrice(tdxConn *tdx.TdxConn, dates []int32, mkt byte
 }
 
 // 统计历史分时成交数据[所有记录]
-func CountDateLsFscj(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string, bigMoney int) (b, s, c int) {
+func CountDateLsFscj(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string, bigMoney int) (b, s, c int64) {
 	vos := QueryLsFscj(tdxConn, date, mkt, stCode)
 	for _, v := range vos {
 		//0 买，1-卖,2-竞价或平盘买入
 		//涨停价需要看成主动性买单
 		if v.Price == tdx.ZtPrice(v.PreClose, 0.1) {
-			b += v.Price * v.Vol
+			b += int64(v.Price * v.Vol)
 		} else {
 			if v.Price*v.Vol >= bigMoney {
 				if v.Buyorsell == 0 {
-					b += v.Price * v.Vol
+					b += int64(v.Price * v.Vol)
 				} else {
-					s += v.Vol * v.Price
+					s += int64(v.Price * v.Vol)
 				}
 			}
 		}
@@ -87,19 +87,19 @@ func CountDateLsFscj(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string,
 }
 
 // 统计即日分时成交数据[所有记录]
-func CountDateTodayFscj(tdxConn *tdx.TdxConn, mkt int16, stCode string, preClosePrice int, bigMoney int) (b, s, c int) {
+func CountDateTodayFscj(tdxConn *tdx.TdxConn, mkt int16, stCode string, preClosePrice int, bigMoney int) (b, s, c int64) {
 	vos := QueryTodayFscj(tdxConn, mkt, stCode, preClosePrice)
 	for _, v := range vos {
 		//0 买，1-卖,2-竞价或平盘买入
 		//涨停价需要看成主动性买单
 		if v.Price == tdx.ZtPrice(v.PreClose, 0.1) {
-			b += v.Price * v.Vol
+			b += int64(v.Price * v.Vol)
 		} else {
 			if v.Price*v.Vol >= bigMoney {
 				if v.Buyorsell == 0 {
-					b += v.Price * v.Vol
+					b += int64(v.Price * v.Vol)
 				} else {
-					s += v.Vol * v.Price
+					s += int64(v.Price * v.Vol)
 				}
 			}
 		}
@@ -170,7 +170,7 @@ func concatFsHqAndMoney(fscjVos []tdx.TdxFscjVo, fshqVos []tdx.TdxFshqVo, bigMon
 		}
 	}
 
-	getBigInfo := func(time int) (b, s, c int) {
+	getBigInfo := func(time int) (b, s, c int64) {
 		fscjTimeDatas, ok := fscjMaps[time]
 		if !ok {
 			return b, s, c
@@ -179,20 +179,20 @@ func concatFsHqAndMoney(fscjVos []tdx.TdxFscjVo, fshqVos []tdx.TdxFshqVo, bigMon
 		for _, v := range *fscjTimeDatas {
 			//涨停价需要看成主动性买单
 			if v.Price == tdx.ZtPrice(v.PreClose, 0.1) {
-				b += v.Price * v.Vol
+				b += int64(v.Price * v.Vol)
 			} else {
 				if v.Price*v.Vol >= bigMoney {
 					if v.Buyorsell == 0 {
-						b += v.Price * v.Vol
+						b += int64(v.Price * v.Vol)
 					} else {
-						s += v.Vol * v.Price
+						s += int64(v.Price * v.Vol)
 					}
 				}
 			}
 		}
 		return b, s, b - s
 	}
-	moneyCount := 0
+	moneyCount := int64(0)
 	for _, vo := range fshqVos {
 		voTime := time.Time(vo.DateTime)
 		//计算买单，卖单
