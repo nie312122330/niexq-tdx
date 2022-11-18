@@ -76,10 +76,9 @@ func (newTdx *TdxConn) heartBeat() {
 		time.Sleep(27 * time.Second)
 		_, err := newTdx.SendData(CmdHeartbeat())
 		if nil != err {
+			newTdx.TdxConnClose()
 			log.Printf("【%s】心跳检查失败\n", newTdx.ConnName)
 			break
-		} else {
-			log.Printf("【%s】心跳检查成功\n", newTdx.ConnName)
 		}
 		if !newTdx.Connected {
 			break
