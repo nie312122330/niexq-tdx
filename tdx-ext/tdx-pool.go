@@ -32,6 +32,10 @@ func InitPool(maxNum int32, hqAddr string) {
 func GetConn() (tdxConn *tdx.TdxConn, err error) {
 	lock.Lock()
 	defer lock.Unlock()
+	return acGetConn()
+}
+
+func acGetConn() (tdxConn *tdx.TdxConn, err error) {
 	fmt.Printf("当前空闲连接数为:【%d】,已创建连接数【%d】，最大连接数【%d】\n", len(connChan), curConnNum, maxConnNum)
 	if len(connChan) > 0 || atomic.LoadInt32(&curConnNum) >= maxConnNum {
 		//连接池有空闲连接或者创建的链接数已最大了，只能等待
@@ -39,10 +43,11 @@ func GetConn() (tdxConn *tdx.TdxConn, err error) {
 		if r.Connected {
 			return r, nil
 		} else {
-			return GetConn()
+			return acGetConn()
 		}
+	} else {
+		return createConn()
 	}
-	return createConn()
 }
 
 // 归还连接
