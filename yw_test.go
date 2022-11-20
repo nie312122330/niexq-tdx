@@ -96,17 +96,8 @@ func TestQueryBarK1m(t *testing.T) {
 
 // 测试 查询指定最大量能及收盘价
 func TestQueryDatesMaxVolAndClosePrice(t *testing.T) {
-	dates := []int32{20220929}
-	closePrice, maxVol := tdxext.QueryDatesMaxVolAndClosePrice(tdxConn, dates, 1, "600322")
-	log.Printf("【%s】最大量为:%d,最大金额:%d\n", "002073", maxVol, closePrice)
-	res3, _ := tdxConn.QueryTodayJhjj(1, "600322")
-	dv := 0
-	for _, v := range res3.Datas {
-		if v.Hour == 9 {
-			dv = v.Vol
-		}
-	}
-	log.Printf("集合竞价Vol【%d】\n", dv)
+	maxVol := tdxext.QueryDateMaxVol(tdxConn, 20221118, 0, "002197")
+	log.Printf("【%s】最大量为:%d\n", "002073", maxVol)
 }
 
 // 测试 查询股票名称

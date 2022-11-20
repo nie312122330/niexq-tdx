@@ -48,22 +48,34 @@ func QueryTodayStcokList(tdxConn *tdx.TdxConn) []tdx.StListItemVo {
 	return allVos
 }
 
-// 查询指定日期内的收盘价及分钟最大量
-func QueryDatesMaxVolAndClosePrice(tdxConn *tdx.TdxConn, dates []int32, mkt byte, stCode string) (closePrice, maxVol int) {
+// 查询指定日期单分钟最大量--使用分时成交计算
+func QueryDateMaxVol(tdxConn *tdx.TdxConn, dateInt int32, mkt byte, stCode string) (maxVol int64) {
+	maxVol = int64(-1)
 	//排序
-	tdx.BubbleSort(&dates)
-	datas := []tdx.TdxFshqVo{}
-	for _, v := range dates {
-		res, _, _ := tdxConn.QueryLsFshq(v, mkt, stCode)
-		datas = append(datas, res.Datas...)
+	datas := QueryLsFscj(tdxConn, dateInt, int16(mkt), stCode)
+	if len(datas) <= 0 {
+		return maxVol
 	}
-	closePrice = datas[len(datas)-1].Price
+	//按时间分组后的分时成交数据
+	maxVolMap := make(map[int]int64)
 	for _, v := range datas {
-		if v.Vol > maxVol {
-			maxVol = v.Vol
+		key := v.Hour*60 + v.Minus
+		val, ok := maxVolMap[key]
+		if ok {
+			maxVolMap[key] = val + int64(v.Vol)
+		} else {
+			maxVolMap[key] = int64(v.Vol)
 		}
 	}
-	return closePrice, maxVol
+
+	//获取最大值
+	for _, v := range maxVolMap {
+		if v > maxVol {
+			maxVol = v
+		}
+	}
+
+	return maxVol
 }
 
 // 统计历史分时成交数据[所有记录]
