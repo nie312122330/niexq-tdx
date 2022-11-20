@@ -77,7 +77,7 @@ func CountDateLsFscj(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string,
 			if v.Price*v.Vol >= bigMoney {
 				if v.Buyorsell == 0 {
 					b += int64(v.Price * v.Vol)
-				} else if v.Buyorsell == 1 {
+				} else {
 					s += int64(v.Price * v.Vol)
 				}
 			}
@@ -98,7 +98,7 @@ func CountDateTodayFscj(tdxConn *tdx.TdxConn, mkt int16, stCode string, preClose
 			if v.Price*v.Vol >= bigMoney {
 				if v.Buyorsell == 0 {
 					b += int64(v.Price * v.Vol)
-				} else if v.Buyorsell == 1 {
+				} else {
 					s += int64(v.Price * v.Vol)
 				}
 			}
@@ -162,6 +162,12 @@ func concatFsHqAndMoney(fscjVos []tdx.TdxFscjVo, fshqVos []tdx.TdxFshqVo, bigMon
 	fscjMaps := make(map[int]*[]tdx.TdxFscjVo)
 	for _, v := range fscjVos {
 		key := v.Hour*60 + v.Minus
+		if v.Hour == 9 && v.Minus == 25 {
+			//竞价需要看成卖单
+			key = v.Hour*60 + 30
+		} else if v.Hour == 15 && v.Minus == 0 {
+			key = 14*60 + 59
+		}
 		val, ok := fscjMaps[key]
 		if ok {
 			*val = append(*val, v)
@@ -184,7 +190,7 @@ func concatFsHqAndMoney(fscjVos []tdx.TdxFscjVo, fshqVos []tdx.TdxFshqVo, bigMon
 				if v.Price*v.Vol >= bigMoney {
 					if v.Buyorsell == 0 {
 						b += int64(v.Price * v.Vol)
-					} else if v.Buyorsell == 1 {
+					} else {
 						s += int64(v.Price * v.Vol)
 					}
 				}
