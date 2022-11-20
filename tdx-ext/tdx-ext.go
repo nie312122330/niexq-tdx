@@ -77,7 +77,7 @@ func CountDateLsFscj(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string,
 			if v.Price*v.Vol >= bigMoney {
 				if v.Buyorsell == 0 {
 					b += int64(v.Price * v.Vol)
-				} else {
+				} else if v.Buyorsell == 1 {
 					s += int64(v.Price * v.Vol)
 				}
 			}
@@ -86,7 +86,7 @@ func CountDateLsFscj(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode string,
 	return b, s, b - s
 }
 
-// 统计即日分时成交数据[所有记录]
+// 统计今日分时成交数据[所有记录]
 func CountDateTodayFscj(tdxConn *tdx.TdxConn, mkt int16, stCode string, preClosePrice int, bigMoney int) (b, s, c int64) {
 	vos := QueryTodayFscj(tdxConn, mkt, stCode, preClosePrice)
 	for _, v := range vos {
@@ -98,7 +98,7 @@ func CountDateTodayFscj(tdxConn *tdx.TdxConn, mkt int16, stCode string, preClose
 			if v.Price*v.Vol >= bigMoney {
 				if v.Buyorsell == 0 {
 					b += int64(v.Price * v.Vol)
-				} else {
+				} else if v.Buyorsell == 1 {
 					s += int64(v.Price * v.Vol)
 				}
 			}
@@ -184,7 +184,7 @@ func concatFsHqAndMoney(fscjVos []tdx.TdxFscjVo, fshqVos []tdx.TdxFshqVo, bigMon
 				if v.Price*v.Vol >= bigMoney {
 					if v.Buyorsell == 0 {
 						b += int64(v.Price * v.Vol)
-					} else {
+					} else if v.Buyorsell == 1 {
 						s += int64(v.Price * v.Vol)
 					}
 				}
@@ -196,7 +196,9 @@ func concatFsHqAndMoney(fscjVos []tdx.TdxFscjVo, fshqVos []tdx.TdxFshqVo, bigMon
 	for _, vo := range fshqVos {
 		voTime := time.Time(vo.DateTime)
 		//计算买单，卖单
-		b, s, c := getBigInfo(voTime.Hour()*60 + voTime.Minute())
+		voTimtInt := voTime.Hour()*60 + voTime.Minute()
+		// fmt.Println(voTimtInt)
+		b, s, c := getBigInfo(voTimtInt)
 		moneyCount += c
 		//获取这一分钟的 大单
 		resVos = append(resVos, TdxExtTodayMoney{

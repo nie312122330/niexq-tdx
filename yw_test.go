@@ -145,3 +145,10 @@ func TestQueryTodayFsHqAndMoney(t *testing.T) {
 func TestZtPrice(t *testing.T) {
 	tdx.ZtPrice(1275, 0.1)
 }
+
+func TestAA(t *testing.T) {
+	datas, _ := tdxext.QueryFsHqAndMoney(tdxConn, 20221102, 0, "002826", 200000)
+	fmt.Println(datas[len(datas)-1].BigMoneyCount)
+	b, s, c := tdxext.CountDateLsFscj(tdxConn, 20221102, 0, "002826", 200000)
+	fmt.Println(b, s, c)
+}
