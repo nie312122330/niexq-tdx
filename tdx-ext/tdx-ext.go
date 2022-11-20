@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nie312122330/niexq-gotools/dateext"
 	"github.com/nie312122330/niexq-tdx/tdx"
 )
 
@@ -158,16 +159,37 @@ func QueryFsHqAndMoney(tdxConn *tdx.TdxConn, date int32, mkt int16, stCode strin
 }
 
 func concatFsHqAndMoney(fscjVos []tdx.TdxFscjVo, fshqVos []tdx.TdxFshqVo, bigMoney int, preClosePrice int) (resVos []TdxExtTodayMoney, err error) {
+	//增加分时行情  的竞价金额
+	hq01Time := time.Time(fshqVos[0].DateTime)
+	if fscjVos[0].Hour == 9 && fscjVos[0].Minus == 25 {
+		tmpHqVos := []tdx.TdxFshqVo{}
+		dateTime := dateext.WithDate(hq01Time.Year(), int(hq01Time.Month()), hq01Time.Day(), 9, 25, 0)
+		tmpHqVos = append(tmpHqVos, tdx.TdxFshqVo{
+			DateTime: tdx.TdxJsonTime(dateTime.Time),
+			Price:    fscjVos[0].Price,
+			AvgPrice: fscjVos[0].Price,
+			Vol:      fscjVos[0].Vol,
+			VolFlag:  2,
+		})
+		tmpHqVos = append(tmpHqVos, fshqVos...)
+		fshqVos = tmpHqVos
+	}
+
+	if fscjVos[len(fscjVos)-1].Hour == 15 && fscjVos[len(fscjVos)-1].Minus == 0 {
+		dateTime := dateext.WithDate(hq01Time.Year(), int(hq01Time.Month()), hq01Time.Day(), 15, 0, 0)
+		fshqVos = append(fshqVos, tdx.TdxFshqVo{
+			DateTime: tdx.TdxJsonTime(dateTime.Time),
+			Price:    fscjVos[len(fscjVos)-1].Price,
+			AvgPrice: fscjVos[len(fscjVos)-1].Price,
+			Vol:      fscjVos[len(fscjVos)-1].Vol,
+			VolFlag:  2,
+		})
+	}
+
 	//按时间分组 成交数据
 	fscjMaps := make(map[int]*[]tdx.TdxFscjVo)
 	for _, v := range fscjVos {
 		key := v.Hour*60 + v.Minus
-		if v.Hour == 9 && v.Minus == 25 {
-			//竞价需要看成卖单
-			key = v.Hour*60 + 30
-		} else if v.Hour == 15 && v.Minus == 0 {
-			key = 14*60 + 59
-		}
 		val, ok := fscjMaps[key]
 		if ok {
 			*val = append(*val, v)
