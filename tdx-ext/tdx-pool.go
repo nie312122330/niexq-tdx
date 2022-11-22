@@ -52,8 +52,6 @@ func acGetConn() (tdxConn *tdx.TdxConn, err error) {
 
 // 归还连接
 func ReturnConn(tdxConn *tdx.TdxConn) {
-	lock.Lock()
-	defer lock.Unlock()
 	//归还连接的时候需要检查连接是否被关闭了,如果关闭了， 就不要归还回去
 	if tdxConn.Connected {
 		log.Printf("连接【%s】归还成功", tdxConn.ConnName)
