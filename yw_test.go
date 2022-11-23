@@ -11,6 +11,7 @@ import (
 	"github.com/nie312122330/niexq-tdx/tdx"
 	tdxext "github.com/nie312122330/niexq-tdx/tdx-ext"
 	tdxlocal "github.com/nie312122330/niexq-tdx/tdx-local"
+	"github.com/shopspring/decimal"
 )
 
 var tdxConn *tdx.TdxConn
@@ -143,4 +144,17 @@ func TestAA(t *testing.T) {
 	fmt.Printf("%v %v %v\n", datas[len(datas)-1].DateTime.ToStr(), datas[len(datas)-1].Price, datas[len(datas)-1].BigMoneyCount)
 	b, s, c := tdxext.CountDateLsFscj(tdxConn, 20221102, 0, "002826", 200000)
 	fmt.Println(b, s, c)
+}
+
+func TestB1(t *testing.T) {
+
+	// a := float32(9.4) * float32(100)
+	// ss := decimal.NewFromFloat32(a)
+	// s := ss.Floor()
+	fmt.Println(decimal.NewFromFloat(5.460).Round(1).String())
+	fmt.Println(decimal.NewFromFloat(5.450).Round(1).String())
+	fmt.Println(decimal.NewFromFloat(5.449).Round(1).String())
+	fmt.Println(decimal.NewFromFloat(5.4).Round(0).String())
+	fmt.Println(decimal.NewFromFloat(5.5).Round(0).String())
+	fmt.Println(decimal.NewFromFloat(5.6).Round(0).String())
 }

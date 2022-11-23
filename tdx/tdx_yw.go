@@ -47,7 +47,7 @@ func (tc *TdxConn) QueryTodayStList(mkt, start uint16) []StListItemVo {
 		vos = append(vos, StListItemVo{
 			StCode:   stCode,
 			StName:   stName,
-			PreClose: FloatXNumToInt(float64(pre_price), 100),
+			PreClose: Float2Int(float64(pre_price * 100)),
 		})
 	}
 	return vos
@@ -74,12 +74,12 @@ func (tc *TdxConn) QueryTodayJhjj(mkt int16, stCode string) (resuls *TdxRespBase
 	datas := []TdxJhjjVo{}
 	for i := int16(0); i < dataCount; i++ {
 		//解析时间
-		h, m := DataReadTime(vo.BodyData, &pos, 2)              //16-2  时间：hh:mm
-		money := int(DataReadFloat(vo.BodyData, &pos, 4) * 100) //14-4  价格：分
-		vol := DataReadint32(vo.BodyData, &pos)                 //10-4  匹配量
-		unvol := DataReadint32(vo.BodyData, &pos)               //6-4   未匹配量(有+-)
-		unData := DataReadint8(vo.BodyData, &pos)               //跳过1位,不晓得有什么用 2-1
-		sec := DataReadint8(vo.BodyData, &pos)                  //这一位是时间的秒 1-1  时间：秒
+		h, m := DataReadTime(vo.BodyData, &pos, 2)                             //16-2  时间：hh:mm
+		money := Float2Int(float64(DataReadFloat(vo.BodyData, &pos, 4) * 100)) //14-4  价格：分
+		vol := DataReadint32(vo.BodyData, &pos)                                //10-4  匹配量
+		unvol := DataReadint32(vo.BodyData, &pos)                              //6-4   未匹配量(有+-)
+		unData := DataReadint8(vo.BodyData, &pos)                              //跳过1位,不晓得有什么用 2-1
+		sec := DataReadint8(vo.BodyData, &pos)                                 //这一位是时间的秒 1-1  时间：秒
 
 		unFlag := 0
 		if unvol > 0 {
@@ -172,7 +172,7 @@ func (tc *TdxConn) QueryLsPageFscj(date int32, mkt int16, stCode string, startPo
 	BytesToVo(vo.BodyData[0:2], &dataCount, true)
 	pos := 2
 	//上一日的收盘价
-	preClosePrice := FloatXNumToInt(float64(DataReadFloat(vo.BodyData, &pos, 4)), 100)
+	preClosePrice := Float2Int(float64(DataReadFloat(vo.BodyData, &pos, 4) * 100))
 	//上一次的价格
 	last_price := 0
 
@@ -291,7 +291,7 @@ func (tc *TdxConn) QueryLsFshq(date int32, mkt byte, stCode string) (resuls *Tdx
 		return resultVo, 0, errors.New("没有返回数据")
 	}
 	//读取上日的收盘价
-	closePrice := FloatXNumToInt(float64(DataReadFloat(vo.BodyData, &pos, 4)), 100)
+	closePrice := Float2Int(float64(DataReadFloat(vo.BodyData, &pos, 4) * 100))
 
 	datas := []TdxFshqVo{}
 	//今日开盘价
@@ -366,11 +366,11 @@ func (tc *TdxConn) QueryLsBarK1m(mkt int16, stCode string, start, count int16) (
 		price_high_diff := DataReadSignNum(vo.BodyData, &pos)
 		price_low_diff := DataReadSignNum(vo.BodyData, &pos)
 
-		vol := DataReadFloat(vo.BodyData, &pos, 4)
-		dbVol := DataReadFloat(vo.BodyData, &pos, 4)
+		vol_f := DataReadFloat(vo.BodyData, &pos, 4)
+		money_f := DataReadFloat(vo.BodyData, &pos, 4)
 		//数字保存
-		volInt := int64(vol)
-		money := int64(dbVol * 100)
+		volInt := int64(Float2Int(float64(vol_f)))
+		money := int64(Float2Int(float64(money_f * 100)))
 
 		//保存数据
 		open := price_open_diff + pre_diff_base

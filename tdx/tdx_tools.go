@@ -163,11 +163,6 @@ func StrFloat2Float(str string) float64 {
 	return r
 }
 
-func FloatXNumToInt(f float64, mNum int) int {
-	i, _ := strconv.Atoi(fmt.Sprintf("%1.00f", f*float64(mNum)))
-	return i
-}
-
 func StrInt2Int(str string) int {
 	r, err := strconv.ParseInt(str, 10, 32)
 	if nil != err {
@@ -231,4 +226,10 @@ func TdxCalFsTimeByDayInt(dayInt int, idx int) dateext.Date {
 	month := StrInt2Int(dateStr[4:6])
 	day := StrInt2Int(dateStr[6:8])
 	return TdxCalFsTime(year, month, day, idx)
+}
+
+// 小数转整数
+func Float2Int(v float64) int {
+	ints := decimal.NewFromFloat(v).Round(0).String()
+	return StrInt2Int(ints)
 }

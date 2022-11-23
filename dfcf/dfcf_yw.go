@@ -81,8 +81,8 @@ func DcQueryDay5Fshq(retryTimes int, stcode string) (results []DcFshqVo, resultE
 		} else {
 			barTime = barTime.Add(-time.Minute)
 		}
-		kpf := tdx.FloatXNumToInt(tdx.StrFloat2Float(strArr[1]), 100)
-		spf := tdx.FloatXNumToInt(tdx.StrFloat2Float(strArr[2]), 100)
+		kpf := tdx.Float2Int(tdx.StrFloat2Float(strArr[1]) * 100)
+		spf := tdx.Float2Int(tdx.StrFloat2Float(strArr[2]) * 100)
 		voFlag := 0
 		if spf > kpf {
 			voFlag = 1
