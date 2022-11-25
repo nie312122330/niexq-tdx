@@ -43,6 +43,7 @@ func acGetConn() (tdxConn *tdx.TdxConn, err error) {
 		if r.Connected {
 			return r, nil
 		} else {
+			atomic.AddInt32(&curConnNum, -1)
 			return acGetConn()
 		}
 	} else {
