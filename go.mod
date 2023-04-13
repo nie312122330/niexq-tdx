@@ -1,6 +1,6 @@
 module github.com/nie312122330/niexq-tdx
 
-go 1.18
+go 1.20
 
 require (
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
@@ -10,5 +10,5 @@ require (
 
 require (
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect
-	github.com/shopspring/decimal v1.3.1 // indirect
+	github.com/shopspring/decimal v1.3.1
 )
