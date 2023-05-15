@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"os"
+	"sort"
 )
 
 // 解析文件
@@ -23,6 +24,16 @@ func ParseStockLc1dFile(filePath string) []TdxLc1dVo {
 		vos = append(vos, *data)
 	}
 	return vos
+}
+
+func SortDayVosByDate(vos []TdxLc1dVo, asc bool) {
+	sort.Slice(vos, func(i, j int) bool {
+		if !asc {
+			return vos[i].Date > vos[j].Date
+		} else {
+			return vos[i].Date < vos[j].Date
+		}
+	})
 }
 
 type TdxLc1dVo struct {
