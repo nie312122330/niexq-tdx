@@ -3,14 +3,9 @@ package tdxlocal
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"os"
 
-	"math"
-	"strings"
 	"time"
-
-	"github.com/nie312122330/niexq-gotools/dateext"
 )
 
 // 时间区间内的净买
@@ -30,7 +25,7 @@ func Lc1mBarVoByTimeBuyMoney(start, end time.Time, vipdocDir, stCode string) (bu
 
 // 时间区间内的数据
 func Lc1mBarVoByTime(start, end time.Time, vipdocDir, stCode string) []Lc1mBarVo {
-	filePath := Code2FilePath(vipdocDir, stCode)
+	filePath := Code2FilePath(vipdocDir, stCode, "minline")
 	srcDatas := ParseStockLc1mFile(filePath)
 	vos := []Lc1mBarVo{}
 	for _, v := range srcDatas {
@@ -69,28 +64,6 @@ func ParseStockLc1mFile(filePath string) []Lc1mBarVo {
 		vos = append(vos, vo)
 	}
 	return vos
-}
-
-// 直接使用股票代码获取1分钟K线的存储位置
-func Code2FilePath(vipdocDir, stCode6 string) string {
-	mktStr := "sz"
-	if strings.HasPrefix(stCode6, "00") || strings.HasPrefix(stCode6, "30") {
-		mktStr = "sz"
-	} else if strings.HasPrefix(stCode6, "60") {
-		mktStr = "sh"
-	}
-	return fmt.Sprintf("%s/%s/%s/%s%s.lc1", vipdocDir, mktStr, "minline", mktStr, stCode6)
-}
-
-// 通达信日期，和时间转化为GO日期
-func lc1mDateTime2Str(date, time uint16) time.Time {
-	year := int(math.Floor(float64(date)/2048)) + 2004
-	month := int(math.Floor(math.Mod(float64(date), 2048) / 100))
-	day := int(math.Mod(math.Mod(float64(date), 2048), 100))
-	hour := int(math.Floor(float64(time) / 60))
-	miniu := int(math.Mod(float64(time), 60))
-	acDate := dateext.WithDate(year, month, day, hour, miniu, 0)
-	return acDate.Time
 }
 
 // 1分红数据的数据结构
