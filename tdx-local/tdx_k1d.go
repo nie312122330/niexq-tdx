@@ -5,7 +5,26 @@ import (
 	"encoding/binary"
 	"os"
 	"sort"
+
+	"github.com/nie312122330/niexq-tdx/tdx"
 )
+
+// 计算涨停数量
+func CountDayK10cm(baseDir, code string) int {
+	path := Code2FilePath(baseDir, code, "lday")
+	vos := ParseStockLc1dFile(path)
+	SortDayVosByDate(vos, false)
+
+	count := 0
+	for i := 0; i < len(vos); i++ {
+		if int(vos[i].Close) == tdx.ZtPrice(int(vos[i+1].Close), 0.1) {
+			count++
+		} else {
+			break
+		}
+	}
+	return count
+}
 
 // 解析文件
 func ParseStockLc1dFile(filePath string) []TdxLc1dVo {
