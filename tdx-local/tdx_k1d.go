@@ -10,12 +10,13 @@ import (
 )
 
 // 计算涨停数量
-func CountDayK10cm(baseDir, code string) int {
+func CountDayK10cm(baseDir, code string) (count int, err error) {
 	path := Code2FilePath(baseDir, code, "lday")
-	vos := ParseStockLc1dFile(path)
+	vos, err := ParseStockLc1dFile(path)
+	if nil != err {
+		return count, err
+	}
 	SortDayVosByDate(vos, false)
-
-	count := 0
 	for i := 0; i < len(vos); i++ {
 		if int(vos[i].Close) == tdx.ZtPrice(int(vos[i+1].Close), 0.1) {
 			count++
@@ -23,15 +24,15 @@ func CountDayK10cm(baseDir, code string) int {
 			break
 		}
 	}
-	return count
+	return count, err
 }
 
 // 解析文件
-func ParseStockLc1dFile(filePath string) []TdxLc1dVo {
+func ParseStockLc1dFile(filePath string) (res []TdxLc1dVo, err error) {
 	//确定文件名称
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	dataLen := len(data)
 	vos := []TdxLc1dVo{}
@@ -42,7 +43,7 @@ func ParseStockLc1dFile(filePath string) []TdxLc1dVo {
 		binary.Read(buf, binary.LittleEndian, data)
 		vos = append(vos, *data)
 	}
-	return vos
+	return vos, nil
 }
 
 func SortDayVosByDate(vos []TdxLc1dVo, asc bool) {
