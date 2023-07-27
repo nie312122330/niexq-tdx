@@ -9,8 +9,11 @@ import (
 )
 
 // 时间区间内的净买
-func Lc1mBarVoByTimeBuyMoney(start, end time.Time, vipdocDir, stCode string) (buy, sall, min float32) {
-	datas := Lc1mBarVoByTime(start, end, vipdocDir, stCode)
+func Lc1mBarVoByTimeBuyMoney(start, end time.Time, vipdocDir, stCode string) (buy, sall, min float32, err error) {
+	datas, err := Lc1mBarVoByTime(start, end, vipdocDir, stCode)
+	if nil != err {
+		return 0.0, 0.0, 0.0, err
+	}
 	for _, v := range datas {
 		if v.Open < v.Close {
 			buy += v.Amount
@@ -20,28 +23,31 @@ func Lc1mBarVoByTimeBuyMoney(start, end time.Time, vipdocDir, stCode string) (bu
 			min += v.Amount
 		}
 	}
-	return buy, sall, min
+	return buy, sall, min, nil
 }
 
 // 时间区间内的数据
-func Lc1mBarVoByTime(start, end time.Time, vipdocDir, stCode string) []Lc1mBarVo {
+func Lc1mBarVoByTime(start, end time.Time, vipdocDir, stCode string) (results []Lc1mBarVo, err error) {
 	filePath := Code2FilePath(vipdocDir, stCode, "minline")
-	srcDatas := ParseStockLc1mFile(filePath)
+	srcDatas, err := ParseStockLc1mFile(filePath)
+	if nil != err {
+		return nil, err
+	}
 	vos := []Lc1mBarVo{}
 	for _, v := range srcDatas {
 		if v.DateTime.After(start) && v.DateTime.Before(end) {
 			vos = append(vos, v)
 		}
 	}
-	return vos
+	return vos, err
 }
 
 // 解析文件
-func ParseStockLc1mFile(filePath string) []Lc1mBarVo {
+func ParseStockLc1mFile(filePath string) (results []Lc1mBarVo, err error) {
 	//确定文件名称
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	dataLen := len(data)
 	vos := []Lc1mBarVo{}
@@ -63,7 +69,7 @@ func ParseStockLc1mFile(filePath string) []Lc1mBarVo {
 		}
 		vos = append(vos, vo)
 	}
-	return vos
+	return vos, nil
 }
 
 // 1分红数据的数据结构

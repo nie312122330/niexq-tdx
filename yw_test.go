@@ -39,8 +39,8 @@ func TestLocalFile(t *testing.T) {
 	//K线数据测试,计算量与价的关系
 	start := dateext.WithDate(2022, 9, 15, 9, 0, 0).Time
 	end := dateext.WithDate(2022, 10, 10, 18, 0, 0).Time
-	buy, sall, min := tdxlocal.Lc1mBarVoByTimeBuyMoney(start, end, `C:\zd_zsone\vipdoc`, "600171")
-	fmt.Printf("买:%0.2f,卖:%0.2f,平:%0.2f\n", buy, sall, min)
+	buy, sall, min, err := tdxlocal.Lc1mBarVoByTimeBuyMoney(start, end, `C:\zd_zsone\vipdoc`, "603296")
+	fmt.Printf("买:%0.2f,卖:%0.2f,平:%0.2f,%v\n", buy, sall, min, err)
 }
 
 // 测试  字符集合转换
