@@ -16,6 +16,9 @@ func CountDayK10cm(baseDir, code string) (count int, err error) {
 	if nil != err {
 		return count, err
 	}
+	if len(vos) > 1 {
+		return 0, nil
+	}
 	SortDayVosByDate(vos, false)
 	for i := 0; i < len(vos); i++ {
 		if int(vos[i].Close) == tdx.ZtPrice(int(vos[i+1].Close), 0.1) {
