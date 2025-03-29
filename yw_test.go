@@ -17,7 +17,7 @@ import (
 var tdxConn *tdx.TdxConn
 
 func init() {
-	serverAddr := "119.147.212.81:7709"
+	serverAddr := "120.76.1.198:7709"
 	tdxConn1, err := tdx.NewTdxConn("conn1", serverAddr)
 	if nil != err {
 		panic(err)
@@ -104,7 +104,7 @@ func TestQueryDatesMaxVolAndClosePrice(t *testing.T) {
 // 测试 查询股票名称
 func TestQueryStName(t *testing.T) {
 	name, _ := tdx.QueryStName(0, "000630", 3)
-	slog.Info(fmt.Sprintf("%s", name))
+	slog.Info(name)
 }
 
 // 测试 查询历史的所有分时成交
