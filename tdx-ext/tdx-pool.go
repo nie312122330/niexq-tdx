@@ -36,7 +36,7 @@ func GetConn() (tdxConn *tdx.TdxConn, err error) {
 }
 
 func acGetConn() (tdxConn *tdx.TdxConn, err error) {
-	fmt.Printf("当前空闲连接数为:【%d】,已创建连接数【%d】，最大连接数【%d】\n", len(connChan), curConnNum, maxConnNum)
+	fmt.Printf("当前空闲连接数为:【%d】,已创建连接数【%d】，最大连接数【%d】", len(connChan), curConnNum, maxConnNum)
 	if len(connChan) > 0 || atomic.LoadInt32(&curConnNum) >= maxConnNum {
 		//连接池有空闲连接或者创建的链接数已最大了，只能等待
 		r := <-connChan
@@ -68,10 +68,10 @@ func createConn() (tdxConn *tdx.TdxConn, err1 error) {
 	connName := fmt.Sprintf("N%d-%d", time.Now().UnixMilli(), time.Now().Nanosecond())
 	tdxConn, err := tdx.NewTdxConn(connName, tdxHqAddr)
 	if nil != err {
-		slog.Info(fmt.Sprintf("连接【%s】通达信行情服务器【%s】出错:%v\n", connName, tdxHqAddr, err))
+		slog.Info(fmt.Sprintf("连接【%s】通达信行情服务器【%s】出错:%v", connName, tdxHqAddr, err))
 		return nil, errors.New("创建连接失败")
 	} else {
-		slog.Info(fmt.Sprintf("连接【%s】通达信行情服务器【%s】成功\n", connName, tdxHqAddr))
+		slog.Info(fmt.Sprintf("连接【%s】通达信行情服务器【%s】成功", connName, tdxHqAddr))
 		atomic.AddInt32(&curConnNum, 1)
 		return tdxConn, nil
 	}
