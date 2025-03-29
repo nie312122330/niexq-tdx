@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"compress/zlib"
 	"errors"
+	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net"
 	"sync"
 	"time"
@@ -50,21 +51,21 @@ func (newTdx *TdxConn) tdxConnLogin() error {
 		newTdx.Connected = false
 		return errorLogin1
 	} else {
-		log.Printf("第一次登录返回【%s】\n", BytesToHexStr(lgVo1.HedData))
+		slog.Info(fmt.Sprintf("第一次登录返回【%s】", BytesToHexStr(lgVo1.HedData)))
 	}
 	lgVo2, errorLogin2 := newTdx.SendData(CmdBytesLogin2())
 	if nil != errorLogin2 {
 		newTdx.Connected = false
 		return errorLogin2
 	} else {
-		log.Printf("第二次登录返回【%s】\n", BytesToHexStr(lgVo2.HedData))
+		slog.Info(fmt.Sprintf("第二次登录返回【%s】", BytesToHexStr(lgVo2.HedData)))
 	}
 	lgVo3, errorLogin3 := newTdx.SendData(CmdBytesLogin3())
 	if nil != errorLogin3 {
 		newTdx.Connected = false
 		return errorLogin3
 	} else {
-		log.Printf("第三次登录返回【%s】\n", BytesToHexStr(lgVo3.HedData))
+		slog.Info(fmt.Sprintf("第三次登录返回【%s】", BytesToHexStr(lgVo3.HedData)))
 	}
 	return nil
 }
@@ -77,7 +78,7 @@ func (newTdx *TdxConn) heartBeat() {
 		_, err := newTdx.SendData(CmdHeartbeat())
 		if nil != err {
 			newTdx.TdxConnClose()
-			log.Printf("【%s】心跳检查失败\n", newTdx.ConnName)
+			slog.Info(fmt.Sprintf("【%s】心跳检查失败", newTdx.ConnName))
 			break
 		}
 		if !newTdx.Connected {
@@ -130,7 +131,7 @@ func (tc *TdxConn) reciveTcpPackVo() (vo TdxTcpPackVo, err error) {
 		resultVo, resultErr = tc.bodyBytesPkgVo(headerVo, headerData, bodyData)
 		//读取到了一个完整的包了，不需要再次读取，因为TDX通信协议一次只返回一个包
 		if len(cacheBytes) > 0 {
-			log.Printf("通达信返回的数据包，读取一个完整的包以后还有其他字节，其他字节长度为【%d】\n", len(cacheBytes))
+			slog.Info(fmt.Sprintf("通达信返回的数据包，读取一个完整的包以后还有其他字节，其他字节长度为【%d】", len(cacheBytes)))
 		}
 		break
 	}

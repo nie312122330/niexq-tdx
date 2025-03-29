@@ -2,7 +2,7 @@ package test
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"testing"
 
 	"github.com/axgle/mahonia"
@@ -30,7 +30,7 @@ func TestQueryStList(t *testing.T) {
 	datas := tdxext.QueryTodayStcokList(tdxConn)
 	fmt.Println(len(datas))
 	for _, v := range datas {
-		fmt.Printf("%v\n", v)
+		fmt.Printf("%v", v)
 	}
 }
 
@@ -40,7 +40,7 @@ func TestLocalFile(t *testing.T) {
 	start := dateext.WithDate(2022, 9, 15, 9, 0, 0).Time
 	end := dateext.WithDate(2022, 10, 10, 18, 0, 0).Time
 	buy, sall, min, err := tdxlocal.Lc1mBarVoByTimeBuyMoney(start, end, `C:\zd_zsone\vipdoc`, "603296")
-	fmt.Printf("买:%0.2f,卖:%0.2f,平:%0.2f,%v\n", buy, sall, min, err)
+	fmt.Printf("买:%0.2f,卖:%0.2f,平:%0.2f,%v", buy, sall, min, err)
 }
 
 // 测试  字符集合转换
@@ -55,9 +55,9 @@ func TestGBK2UTF8(t *testing.T) {
 func TestQueryLsPageFscj(t *testing.T) {
 	resp, _ := tdxConn.QueryLsPageFscj(20221111, 0, "002197", 0, 1000)
 	for _, v := range resp.Datas {
-		log.Printf("%v:%v:%v %v  %v  %v \n", v.Hour, v.Minus, v.Second, v.Price, v.Vol, v.Buyorsell)
+		slog.Info(fmt.Sprintf("%v:%v:%v %v  %v  %v ", v.Hour, v.Minus, v.Second, v.Price, v.Vol, v.Buyorsell))
 	}
-	log.Printf("历史分时成交返回数据【%d】条\r\n", len(resp.Datas))
+	slog.Info(fmt.Sprintf("历史分时成交返回数据【%d】条", len(resp.Datas)))
 }
 
 // 测试  今日分时行情
@@ -65,7 +65,7 @@ func TestQueryTodayFshq(t *testing.T) {
 	res2, _, _ := tdxConn.QueryTodayFshq(0, "002008", 20221111, 2594)
 	for idx, v := range res2.Datas {
 		if idx <= 10 || (idx >= 110 && idx <= 130) || idx >= 230 {
-			log.Printf("%v,%v,%v,%v,%v\n", v.DateTime.ToStr(), v.Price, v.AvgPrice, v.Vol, v.VolFlag)
+			slog.Info(fmt.Sprintf("%v,%v,%v,%v,%v", v.DateTime.ToStr(), v.Price, v.AvgPrice, v.Vol, v.VolFlag))
 		}
 	}
 }
@@ -75,7 +75,7 @@ func TestQueryFshq(t *testing.T) {
 	res2, _, _ := tdxConn.QueryLsFshq(20221111, 1, "600519")
 	for idx, v := range res2.Datas {
 		if idx <= 10 || (idx >= 110 && idx <= 130) || idx >= 230 {
-			log.Printf("%v,%v,%v,%v,%v\n", v.DateTime.ToStr(), v.Price, v.AvgPrice, v.Vol, v.VolFlag)
+			slog.Info(fmt.Sprintf("%v,%v,%v,%v,%v", v.DateTime.ToStr(), v.Price, v.AvgPrice, v.Vol, v.VolFlag))
 		}
 	}
 }
@@ -83,28 +83,28 @@ func TestQueryFshq(t *testing.T) {
 // 测试 集合竞价
 func TestQueryJhjj(t *testing.T) {
 	res3, _ := tdxConn.QueryTodayJhjj(1, "600322")
-	log.Printf("集合竞价返回数据【%d】条\n", len(res3.Datas))
+	slog.Info(fmt.Sprintf("集合竞价返回数据【%d】条", len(res3.Datas)))
 	for _, v := range res3.Datas {
-		log.Printf("%v\n", v)
+		slog.Info(fmt.Sprintf("%v", v))
 	}
 }
 
 // 测试 查询1分钟的K线图
 func TestQueryBarK1m(t *testing.T) {
 	res4, _ := tdxConn.QueryLsBarK1m(1, "600322", 0, 100)
-	log.Printf("1分钟的K线图返回数据【%d】条\n", len(res4.Datas))
+	slog.Info(fmt.Sprintf("1分钟的K线图返回数据【%d】条", len(res4.Datas)))
 }
 
 // 测试 查询指定最大量能及收盘价
 func TestQueryDatesMaxVolAndClosePrice(t *testing.T) {
 	maxVol := tdxext.QueryDateMaxVol(tdxConn, 20221118, 0, "002197")
-	log.Printf("【%s】最大量为:%d\n", "002073", maxVol)
+	slog.Info(fmt.Sprintf("【%s】最大量为:%d", "002073", maxVol))
 }
 
 // 测试 查询股票名称
 func TestQueryStName(t *testing.T) {
 	name, _ := tdx.QueryStName(0, "000630", 3)
-	log.Printf("%s\n", name)
+	slog.Info(fmt.Sprintf("%s", name))
 }
 
 // 测试 查询历史的所有分时成交
@@ -112,7 +112,7 @@ func TestQueryLsFscj(t *testing.T) {
 	datas := tdxext.QueryLsFscj(tdxConn, 20221111, 1, "600879")
 	fmt.Println(len(datas))
 	for _, v := range datas {
-		fmt.Printf("%v\n", v)
+		fmt.Printf("%v", v)
 	}
 }
 
@@ -122,7 +122,7 @@ func Test1(t *testing.T) {
 	dateInt := tdx.StrInt2Int(dateStr)
 	datas, _ := tdxext.QueryFsHqAndMoney(tdxConn, int32(dateInt), 0, "002197", 20*10000)
 	for _, v := range datas {
-		fmt.Printf("%v %v %v %v %v %v\n", v.DateTime.ToStr(), v.Price, v.Vol, v.BigInMoney, v.BigOutMoney, v.BigMoneyCount)
+		fmt.Printf("%v %v %v %v %v %v", v.DateTime.ToStr(), v.Price, v.Vol, v.BigInMoney, v.BigOutMoney, v.BigMoneyCount)
 	}
 }
 
@@ -130,7 +130,7 @@ func Test1(t *testing.T) {
 func TestQueryTodayFsHqAndMoney(t *testing.T) {
 	datas, _ := tdxext.QueryTodayFsHqAndMoney(tdxConn, 20221114, 0, "002397", 20*10000, 1105)
 	for _, v := range datas {
-		fmt.Printf("%v %v %v %v %v %v\n", v.DateTime.ToStr(), v.Price, v.Vol, v.BigInMoney, v.BigOutMoney, v.BigMoneyCount)
+		fmt.Printf("%v %v %v %v %v %v", v.DateTime.ToStr(), v.Price, v.Vol, v.BigInMoney, v.BigOutMoney, v.BigMoneyCount)
 	}
 }
 
@@ -140,8 +140,8 @@ func TestZtPrice(t *testing.T) {
 
 func TestAA(t *testing.T) {
 	datas, _ := tdxext.QueryFsHqAndMoney(tdxConn, 20221102, 0, "002826", 200000)
-	fmt.Printf("%v %v %v\n", datas[0].DateTime.ToStr(), datas[0].Price, datas[0].BigMoneyCount)
-	fmt.Printf("%v %v %v\n", datas[len(datas)-1].DateTime.ToStr(), datas[len(datas)-1].Price, datas[len(datas)-1].BigMoneyCount)
+	fmt.Printf("%v %v %v", datas[0].DateTime.ToStr(), datas[0].Price, datas[0].BigMoneyCount)
+	fmt.Printf("%v %v %v", datas[len(datas)-1].DateTime.ToStr(), datas[len(datas)-1].Price, datas[len(datas)-1].BigMoneyCount)
 	b, s, c := tdxext.CountDateLsFscj(tdxConn, 20221102, 0, "002826", 200000)
 	fmt.Println(b, s, c)
 }

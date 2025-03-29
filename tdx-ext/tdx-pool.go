@@ -3,7 +3,7 @@ package tdxext
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"sync"
 	"sync/atomic"
@@ -55,11 +55,11 @@ func acGetConn() (tdxConn *tdx.TdxConn, err error) {
 func ReturnConn(tdxConn *tdx.TdxConn) {
 	//归还连接的时候需要检查连接是否被关闭了,如果关闭了， 就不要归还回去
 	if tdxConn.Connected {
-		log.Printf("连接【%s】归还成功", tdxConn.ConnName)
+		slog.Info(fmt.Sprintf("连接【%s】归还成功", tdxConn.ConnName))
 		connChan <- tdxConn
 	} else {
 		atomic.AddInt32(&curConnNum, -1)
-		log.Printf("连接【%s】已经被释放，不再放回", tdxConn.ConnName)
+		slog.Info(fmt.Sprintf("连接【%s】已经被释放，不再放回", tdxConn.ConnName))
 	}
 }
 
@@ -68,10 +68,10 @@ func createConn() (tdxConn *tdx.TdxConn, err1 error) {
 	connName := fmt.Sprintf("N%d-%d", time.Now().UnixMilli(), time.Now().Nanosecond())
 	tdxConn, err := tdx.NewTdxConn(connName, tdxHqAddr)
 	if nil != err {
-		log.Printf("连接【%s】通达信行情服务器【%s】出错:%v\n", connName, tdxHqAddr, err)
+		slog.Info(fmt.Sprintf("连接【%s】通达信行情服务器【%s】出错:%v\n", connName, tdxHqAddr, err))
 		return nil, errors.New("创建连接失败")
 	} else {
-		log.Printf("连接【%s】通达信行情服务器【%s】成功\n", connName, tdxHqAddr)
+		slog.Info(fmt.Sprintf("连接【%s】通达信行情服务器【%s】成功\n", connName, tdxHqAddr))
 		atomic.AddInt32(&curConnNum, 1)
 		return tdxConn, nil
 	}

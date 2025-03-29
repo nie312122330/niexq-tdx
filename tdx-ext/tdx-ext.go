@@ -2,7 +2,7 @@ package tdxext
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"sort"
 	"strings"
 	"time"
@@ -256,7 +256,7 @@ func concatFsHqAndMoney(fscjVos []tdx.TdxFscjVo, fshqVos []tdx.TdxFshqVo, bigMon
 func innerQueryLsFscj(tdxConn *tdx.TdxConn, vos *[]tdx.TdxFscjVo, date int32, mkt int16, stCode string, start int16) {
 	resp, err := tdxConn.QueryLsPageFscj(date, mkt, stCode, start, 1000)
 	if nil != err {
-		log.Printf("【%s】查询历史分时成交报错,%v", stCode, err)
+		slog.Info(fmt.Sprintf("【%s】查询历史分时成交报错,%v", stCode, err))
 		return
 	}
 	if len(resp.Datas) <= 0 {
@@ -274,7 +274,7 @@ func innerQueryLsFscj(tdxConn *tdx.TdxConn, vos *[]tdx.TdxFscjVo, date int32, mk
 func innerQueryTodayFscj(tdxConn *tdx.TdxConn, vos *[]tdx.TdxFscjVo, mkt int16, stCode string, preClosePrice int, start int16) {
 	resp, err := tdxConn.QueryTodayPageFscj(mkt, stCode, preClosePrice, start, int16(1000))
 	if nil != err {
-		log.Printf("【%s】查询今日分时成交报错,%v", stCode, err)
+		slog.Info(fmt.Sprintf("【%s】查询今日分时成交报错,%v", stCode, err))
 		return
 	}
 	if len(resp.Datas) <= 0 {
