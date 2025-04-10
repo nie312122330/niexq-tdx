@@ -19,6 +19,7 @@ func QueryTodayStcokList(tdxConn *tdx.TdxConn) []tdx.StListItemVo {
 	start := uint16(0)
 	for {
 		vos := tdxConn.QueryTodayStList(mkt, start)
+		slog.Info(fmt.Sprintf("获取到sz股票数量为:%d", len(vos)))
 		for _, v := range vos {
 			if strings.HasPrefix(v.StCode, "00") || strings.HasPrefix(v.StCode, "30") {
 				allVos = append(allVos, v)
@@ -35,6 +36,7 @@ func QueryTodayStcokList(tdxConn *tdx.TdxConn) []tdx.StListItemVo {
 	start = 0
 	for {
 		vos := tdxConn.QueryTodayStList(mkt, start)
+		slog.Info(fmt.Sprintf("获取到sh股票数量为:%d", len(vos)))
 		for _, v := range vos {
 			if strings.HasPrefix(v.StCode, "60") || strings.HasPrefix(v.StCode, "68") {
 				allVos = append(allVos, v)
