@@ -1,14 +1,20 @@
 package tdxext
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"log/slog"
+	"net/http"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/nie312122330/niexq-gotools/dateext"
 	"github.com/nie312122330/niexq-tdx/tdx"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 )
 
 // 获取股票列表【主要用于今日行情的基础数据】
@@ -288,4 +294,34 @@ func innerQueryTodayFscj(tdxConn *tdx.TdxConn, vos *[]tdx.TdxFscjVo, mkt int16, 
 	}
 	*vos = append(*vos, resp.Datas...)
 	innerQueryTodayFscj(tdxConn, vos, mkt, stCode, preClosePrice, int16(start+1000))
+}
+
+// 获取本年度A股的所有节假日：https://www.tdx.com.cn/url/holiday/
+func TdxHolidys() (days []int, err error) {
+	client := http.Client{Timeout: 2 * time.Second}
+	response, err := client.Get("https://www.tdx.com.cn/url/holiday/")
+	if err != nil {
+		return
+	}
+	defer response.Body.Close()
+	dataByte, err := io.ReadAll(response.Body)
+	if nil != err {
+		return days, err
+	}
+	utf8Data, _, _ := transform.Bytes(simplifiedchinese.GBK.NewDecoder(), dataByte)
+	respStr := string(utf8Data)
+
+	// <textarea id="data" style="display:none;"></textarea>
+	re := regexp.MustCompile(`<textarea\s+id=\"data\".*>([\s\S]*?)</textarea>`)
+	matches := re.FindAllStringSubmatch(respStr, -1)
+	if len(matches) < 1 || len(matches[0]) <= 1 {
+		return days, errors.New("未匹配到内容")
+	}
+	lines := strings.Split(matches[0][1], "\r\n")
+	for _, v := range lines {
+		if len(v) > 10 && strings.Contains(v, "|中国|") {
+			days = append(days, tdx.StrInt2Int(v[0:8]))
+		}
+	}
+	return days, err
 }

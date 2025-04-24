@@ -24,3 +24,10 @@ func TestCountDayK10cm(t *testing.T) {
 	nukm, _ := tdxlocal.CountDayK10cm(`C:/zd_zsone/vipdoc`, "603296")
 	fmt.Printf("数量%v\n", nukm)
 }
+
+// 测试  计算涨停数量
+func TestHoloady(t *testing.T) {
+
+	nukm, _ := tdxlocal.CountDayK10cm(`C:/zd_zsone/vipdoc`, "603296")
+	fmt.Printf("数量%v\n", nukm)
+}
