@@ -74,12 +74,12 @@ func (tc *TdxConn) QueryTodayJhjj(mkt int16, stCode string) (resuls *TdxRespBase
 	datas := []TdxJhjjVo{}
 	for i := int16(0); i < dataCount; i++ {
 		//解析时间
-		h, m := DataReadTime(vo.BodyData, &pos, 2)                             //16-2  时间：hh:mm
-		money := Float2Int(float64(DataReadFloat(vo.BodyData, &pos, 4) * 100)) //14-4  价格：分
-		vol := DataReadint32(vo.BodyData, &pos)                                //10-4  匹配量
-		unvol := DataReadint32(vo.BodyData, &pos)                              //6-4   未匹配量(有+-)
-		unData := DataReadint8(vo.BodyData, &pos)                              //跳过1位,不晓得有什么用 2-1
-		sec := DataReadint8(vo.BodyData, &pos)                                 //这一位是时间的秒 1-1  时间：秒
+		h, m := DataReadTime(vo.BodyData, &pos, 2)                               //16-2  时间：hh:mm
+		money := Float2Int64(float64(DataReadFloat(vo.BodyData, &pos, 4) * 100)) //14-4  价格：分
+		vol := DataReadint32(vo.BodyData, &pos)                                  //10-4  匹配量
+		unvol := DataReadint32(vo.BodyData, &pos)                                //6-4   未匹配量(有+-)
+		unData := DataReadint8(vo.BodyData, &pos)                                //跳过1位,不晓得有什么用 2-1
+		sec := DataReadint8(vo.BodyData, &pos)                                   //这一位是时间的秒 1-1  时间：秒
 
 		unFlag := 0
 		if unvol > 0 {
@@ -369,8 +369,8 @@ func (tc *TdxConn) QueryLsBarK1m(mkt int16, stCode string, start, count int16) (
 		vol_f := DataReadFloat(vo.BodyData, &pos, 4)
 		money_f := DataReadFloat(vo.BodyData, &pos, 4)
 		//数字保存
-		volInt := int64(Float2Int(float64(vol_f)))
-		money := int64(Float2Int(float64(money_f * 100)))
+		volInt := Float2Int64(float64(vol_f))
+		money := Float2Int64(float64(money_f * 100))
 
 		//保存数据
 		open := price_open_diff + pre_diff_base

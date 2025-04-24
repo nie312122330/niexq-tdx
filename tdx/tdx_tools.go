@@ -172,6 +172,15 @@ func StrInt2Int(str string) int {
 	return int(r)
 }
 
+func StrInt2Int64(str string) int64 {
+	r, err := strconv.ParseInt(str, 10, 64)
+	if nil != err {
+		panic(err)
+		//1138  1143 1150 1154 1157 1159 1160 1161
+	}
+	return r
+}
+
 func GbkToUtf8(s []byte) ([]byte, error) {
 	reader := transform.NewReader(bytes.NewReader(s), simplifiedchinese.GBK.NewDecoder())
 	d, e := io.ReadAll(reader)
@@ -232,4 +241,10 @@ func TdxCalFsTimeByDayInt(dayInt int, idx int) dateext.Date {
 func Float2Int(v float64) int {
 	ints := decimal.NewFromFloat(v).Round(0).String()
 	return StrInt2Int(ints)
+}
+
+// 小数转整数
+func Float2Int64(v float64) int64 {
+	ints := decimal.NewFromFloat(v).Round(0).String()
+	return StrInt2Int64(ints)
 }
